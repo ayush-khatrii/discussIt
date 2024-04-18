@@ -1,4 +1,4 @@
-# MERN Stack Chat App
+# DiscussIt - MERN Stack Chat App
 
 Welcome to our MERN stack chat application! This application allows users to engage in real-time messaging, manage friend requests, send attachments, create groups, and perform various other actions. This is a complex project that leverages the MERN (MongoDB, Express.js, React.js, Node.js) stack for full-stack development.
 
