@@ -25,7 +25,6 @@ app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello  World!");
-  console.log("Cookies: ", req.cookies);
 });
 
 // routes

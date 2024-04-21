@@ -1,6 +1,5 @@
 const handleSendMessage = async (req, res, next) => {
   try {
-    const { id: receiverId } = req.params;
     const { message } = req.body;
     const senderId = req.user._id;
 

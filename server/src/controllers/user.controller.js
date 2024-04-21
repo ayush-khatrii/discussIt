@@ -101,9 +101,18 @@ const deleteProfile = async (req, res, next) => {
     }
 }
 
+const getAllUsers = async (req, res, next) => {
+    try {
+        const allusers = await User.find({}).select("-password");
+        res.status(200).json(allusers);
+    } catch (error) {
+        next(error);
+    }
+}
 
 export default {
     getProfile,
     updateProfile,
-    deleteProfile
+    deleteProfile,
+    getAllUsers,
 }
