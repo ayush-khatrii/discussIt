@@ -1,7 +1,9 @@
 import User from "../models/user.model.js";
+import Request from "../models/requests.model.js";
 import { removeExistingFile, uploadFile } from "../utils/cloudinary.js";
 import bcrypt from "bcryptjs";
 import errorHandler from "../utils/errorHandler.js";
+import Chat from "../models/chat.model.js";
 
 // Get user profile
 const getProfile = async (req, res, next) => {
@@ -110,9 +112,118 @@ const getAllUsers = async (req, res, next) => {
     }
 }
 
+// Send Friend Request
+const sendFriendRequest = async (req, res, next) => {
+    try {
+        const { userId } = req.body;
+        const request = await Request.findOne({
+            $or: [
+                { sender: userId, receiver: req.user },
+                { sender: req.user, receiver: userId }
+            ]
+        });
+
+        if (request) {
+            return next(errorHandler(400, "Request already sent!"));
+        }
+
+        const newRequest = new Request({
+            sender: req.user,
+            receiver: userId
+        });
+
+        await newRequest.save();
+
+        res.status(200).json({ success: true, message: "Friend request sent!" });
+
+    } catch (error) {
+        next(error);
+    }
+}
+// Accept Friend Request
+const acceptFriendRequest = async (req, res, next) => {
+    try {
+        const { requestId, accept } = req.body;
+
+        const request = await Request.findById(requestId)
+            .populate("sender", "fullName")
+            .populate("receiver", "fullName");
+
+        if (!request) {
+            return next(errorHandler(404, "Request not found!"));
+        }
+
+        if (request.receiver._id.toString() !== req.user.toString()) {
+            return next(errorHandler(400, "You are not allowed to accept this request!"));
+        }
+
+        if (!accept) {
+            await request.deleteOne();
+            return res.status(200).json({ success: true, message: "Friend request rejected!" });
+        }
+
+        const members = [request.sender._id, request.receiver._id];
+
+        await Promise.all([
+            Chat.create({
+                members,
+                name: request.sender.fullName
+            }),
+            request.deleteOne(),
+        ]);
+
+        // Socket implementation
+
+
+
+        res.status(200).json({
+            success: true,
+            message: "Friend request accepted!",
+            senderId: request.sender._id
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
+// Get all friend requests
+const getAllFriendRequests = async (req, res, next) => {
+    try {
+
+        const allRequests = await Request.find(
+            { receiver: req.user }
+        ).populate("sender", "fullName avatar");
+
+        if (!allRequests || allRequests.length === 0) {
+            return next(errorHandler(404, "No pending friend requests found!"));
+        }
+
+
+
+        const friendRequests = allRequests.map(({ _id, sender, fullName, avatar }) => ({
+            _id,
+            sender: {
+                _id: sender._id,
+                fullName: sender.fullName,
+                avatar: sender.avatar.avatar_url
+            }
+        }));
+
+        res.status(200).json({
+            success: true,
+            friendRequests
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
 export default {
     getProfile,
     updateProfile,
     deleteProfile,
     getAllUsers,
+    sendFriendRequest,
+    acceptFriendRequest,
+    getAllFriendRequests
 }

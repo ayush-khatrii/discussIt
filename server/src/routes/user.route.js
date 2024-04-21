@@ -11,4 +11,9 @@ router.get("/", verifyToken, userController.getAllUsers);
 router.put("/update/:userId", verifyToken, uploadAvatar, userController.updateProfile);
 router.delete("/delete/:userId", verifyToken, userController.deleteProfile);
 
+// Friend Requests route
+router.put("/send-request", verifyToken, userController.sendFriendRequest);
+router.put("/accept-request", verifyToken, userController.acceptFriendRequest);
+router.get("/all-friend-requests", verifyToken, userController.getAllFriendRequests);
+
 export default router;
