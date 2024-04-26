@@ -28,7 +28,7 @@ const updateProfile = async (req, res, next) => {
         if (!userId) {
             return next(errorHandler(404, 'User not provided!'));
         }
-        const user = await User.findById(userId).select("-password ");
+        const user = await User.findById(userId).select("-password");
 
         if (!user) {
             return next(errorHandler(404, 'User not found!'));
@@ -102,16 +102,6 @@ const deleteProfile = async (req, res, next) => {
         next(error);
     }
 }
-
-const getAllUsers = async (req, res, next) => {
-    try {
-        const allusers = await User.find({}).select("-password");
-        res.status(200).json(allusers);
-    } catch (error) {
-        next(error);
-    }
-}
-
 // Send Friend Request
 const sendFriendRequest = async (req, res, next) => {
     try {
@@ -222,7 +212,6 @@ export default {
     getProfile,
     updateProfile,
     deleteProfile,
-    getAllUsers,
     sendFriendRequest,
     acceptFriendRequest,
     getAllFriendRequests

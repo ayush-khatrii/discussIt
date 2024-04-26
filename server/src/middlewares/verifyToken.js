@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import errorHandler from "../utils/errorHandler.js";
 import User from "../models/user.model.js";
 
-const verifyToken = async (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   if (!req.headers.authorization || !req.headers.authorization.startsWith("Bearer"))
     return next(errorHandler(401, "No token or authorization header found!"));
 
@@ -20,7 +20,6 @@ const verifyToken = async (req, res, next) => {
       if (!decodedData) {
         return next(errorHandler(401, "User not found!"));
       }
-      console.log("Decoded data ki id ", decodedData._id);
 
       if (err) {
         return res.status(401).json({ message: err.message })
@@ -36,4 +35,26 @@ const verifyToken = async (req, res, next) => {
     next(error);
   }
 };
-export default verifyToken;
+
+export const verifyAdmin = async (req, res, next) => {
+
+  if (!req.headers.authorization || !req.headers.authorization.startsWith("Bearer"))
+    return next(errorHandler(401, "No token or authorization header found!"));
+
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) return next(errorHandler(401, "Only Admins are allowed!"));
+
+    const secretKey = jwt.verify(token, process.env.JWT_SECRET);
+    const isMatched = secretKey === process.env.ADMIN_SECRET_KEY;
+
+    if (!isMatched) {
+      return next(errorHandler(401, "Only Admins are allowed!"));
+    }
+    next();
+  } catch (error) {
+    console.log("Error in verify token: ", error.message);
+    next(error);
+  }
+};
+

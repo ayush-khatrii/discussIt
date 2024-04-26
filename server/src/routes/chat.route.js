@@ -1,11 +1,11 @@
 import express from "express";
 import chatController from "../controllers/chat.controller.js";
-import verifyToken from "../middlewares/verifyToken.js";
+import { verifyToken } from "../middlewares/verifyToken.js";
 import { uploadAvatar } from "../middlewares/multer.js";
 
 const router = express.Router();
 
-router.get("/my-chats", verifyToken, chatController.getMyChats);
+// router.get("/my-chats", verifyToken, chatController.getMyChats);
 router.post("/create-group", verifyToken, chatController.createGroupChat);
 router.delete("/delete/:chatId", verifyToken, chatController.deleteGroupChat);
 router.put("/update/:chatId", verifyToken, uploadAvatar, chatController.updateGroupChat);
