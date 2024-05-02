@@ -5,8 +5,7 @@ import { poppins } from '@/fonts/font';
 const Layout = ({ children }) => {
     return (
         <main className={`${poppins.className}`}>
-            <Sidebar />
-            <section className=''>
+            <section>
                 {children}
             </section>
         </main>

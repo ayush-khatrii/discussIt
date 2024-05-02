@@ -3,13 +3,12 @@ import errorHandler from "../utils/errorHandler.js";
 import User from "../models/user.model.js";
 
 export const verifyToken = async (req, res, next) => {
-  if (!req.headers.authorization || !req.headers.authorization.startsWith("Bearer"))
-    return next(errorHandler(401, "No token or authorization header found!"));
 
   try {
-    const token = req.headers.authorization.split(" ")[1];
-    if (!token) return next(errorHandler(401, "Please login first!"));
-
+    const token = req.cookies["token"];
+    if (!token) {
+      return next(errorHandler(401, "Please login first!"))
+    }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
       if (!decoded) {
@@ -37,14 +36,10 @@ export const verifyToken = async (req, res, next) => {
 };
 
 export const verifyAdmin = async (req, res, next) => {
-
-  if (!req.headers.authorization || !req.headers.authorization.startsWith("Bearer"))
-    return next(errorHandler(401, "No token or authorization header found!"));
+  const token = req.cookies["admin-token"];
+  if (!token) { return next(errorHandler(401, "Please login first!")); }
 
   try {
-    const token = req.headers.authorization.split(" ")[1];
-    if (!token) return next(errorHandler(401, "Only Admins are allowed!"));
-
     const secretKey = jwt.verify(token, process.env.JWT_SECRET);
     const isMatched = secretKey === process.env.ADMIN_SECRET_KEY;
 

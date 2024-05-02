@@ -1,8 +1,9 @@
+import { poppins } from '@/fonts/font'
 import React from 'react'
 
 const Layout = ({ children }) => {
     return (
-        <main className=''>
+        <main className={`${poppins.className}`}>
             {children}
         </main>
     )

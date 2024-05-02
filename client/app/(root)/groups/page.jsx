@@ -11,8 +11,8 @@ const users = [
 		fallback: "gg"
 	},
 	{
-		fullName: "BackChod Panti",
-		chatName: "backchod-panti",
+		fullName: "pagal Panti",
+		chatName: "pagal.panti",
 		fallback: "kk"
 	},
 

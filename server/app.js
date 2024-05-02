@@ -13,11 +13,14 @@ import adminRouter from "./src/routes/admin.route.js";
 import connectDB from "./src/db/connectDB.js";
 import cookieParser from "cookie-parser";
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 // MiddleWares
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
 app.use(cookieParser());
 
 // Http requests

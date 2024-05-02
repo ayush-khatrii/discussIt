@@ -1,14 +1,35 @@
 import { Avatar, Box, Flex } from '@radix-ui/themes'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { IoMdNotifications } from "react-icons/io";
-
+import { useRouter } from "next/navigation"
+import useAuthStore from '@/store/store';
+import toast from 'react-hot-toast';
 const Navbar = () => {
+
+	const { isLoggedIn, getUser } = useAuthStore();
+	const [user, setUser] = useState([]);
+	const router = useRouter();
+
+
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			try {
+				const userData = await getUser();
+				console.log("user data  from navbar", userData);
+				setUser(userData);
+			} catch (error) {
+				toast.error(error);
+			}
+		}
+		fetchUser();
+	}, []);
 	return (
+
 		<>
 			<nav className=' shadow-md top-0 w-full p-2 bg-black border-b border-zinc-700'>
 				<Flex as='div' className='' px="5" align="center" justify="between" gap="3">
 					<Flex align="center" gap="3">
-
 						<Avatar
 							radius="full"
 							size="4"
@@ -18,7 +39,7 @@ const Navbar = () => {
 						</Avatar>
 						<Flex align="center" direction="column">
 							<p className='text-2xl font-bold text-zinc-300 '>
-								ayush.khatrii
+								{user?.username}
 							</p>
 						</Flex>
 					</Flex>

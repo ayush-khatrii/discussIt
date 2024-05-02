@@ -76,7 +76,7 @@ const handleSignIn = async (req, res, next) => {
     const correctPassword = await bcrypt.compare(password, foundUser.password);
 
     if (!correctPassword || !foundUser) {
-      return next(errorHandler(401, "Invalid userame or password!"));
+      return next(errorHandler(401, "Invalid username or password!"));
     }
 
 
