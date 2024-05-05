@@ -18,7 +18,7 @@ const port = process.env.PORT || 5000;
 // MiddleWares
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:5173",
   credentials: true
 }));
 app.use(cookieParser());
@@ -37,14 +37,13 @@ app.use("/admin", adminRouter);
 
 
 // checking middlewares
-
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const errorMessage = err.message || "Internal server error";
+  const message = err.message || "Internal server error";
 
   return res.status(statusCode).json({
     success: false,
-    errorMessage,
+    message,
     statusCode,
   });
 });

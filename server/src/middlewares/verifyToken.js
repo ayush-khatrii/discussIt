@@ -5,7 +5,7 @@ import User from "../models/user.model.js";
 export const verifyToken = async (req, res, next) => {
 
   try {
-    const token = req.cookies["token"];
+    const token = req.cookies.token;
     if (!token) {
       return next(errorHandler(401, "Please login first!"))
     }
