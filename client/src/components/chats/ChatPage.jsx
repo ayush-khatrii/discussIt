@@ -3,8 +3,6 @@ import React, { useEffect } from 'react'
 import { MdSearch } from "react-icons/md";
 import { GoDotFill } from "react-icons/go";
 import Sidebar from '../Sidebar'
-import useAuthStore from '../../store/store'
-import toast, { Toaster } from 'react-hot-toast'
 import { Link } from 'react-router-dom';
 
 const users = [

@@ -6,7 +6,7 @@ const { SERVER_URL } = config;
 const useAuthStore = create((set) => ({
 	user: null,
 	isAdmin: false,
-	isLoading: false,
+	isLoading: true,
 	isLoggedIn: false,
 	signup: async (fullName, password, username, gender) => {
 		try {
@@ -35,7 +35,6 @@ const useAuthStore = create((set) => ({
 	},
 	login: async (username, password) => {
 		try {
-			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/auth/login`, {
 				method: 'POST',
 				headers: {
@@ -61,7 +60,6 @@ const useAuthStore = create((set) => ({
 	logout: async () => {
 		try {
 
-			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/auth/logout`, {
 				method: 'POST',
 				headers: {
@@ -86,7 +84,6 @@ const useAuthStore = create((set) => ({
 	},
 	getUser: async () => {
 		try {
-			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/user/profile`, {
 				method: "GET",
 				headers: {
@@ -95,11 +92,11 @@ const useAuthStore = create((set) => ({
 				credentials: 'include',
 			});
 			const userData = await response.json();
+
 			if (response.ok) {
-				set({ isLoading: false, isLoggedIn: true });
+				set({ isLoggedIn: true });
 				return userData;
 			}
-			set({ isLoggedIn: false });
 		} catch (error) {
 			console.error("getUser error:", error);
 		} finally {

@@ -1,34 +1,61 @@
-import { Routes, Route, useFetcher } from "react-router-dom";
-import HomePage from "./components/Home/HomePage";
-import ChatPage from "./components/chats/ChatPage";
-import SignInPage from "./components/signin/SignInPage";
-import SignUpPage from "./components/signup/SignUpPage";
-import SingleChatPage from "./components/chats/SingleChatPage";
-import { Toaster } from "react-hot-toast";
-import Profile from "./components/Profile/Profile";
-import useAuthStore from "./store/store";
+import React, { Suspense, lazy, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+const HomePage = lazy(() => import('./components/Home/HomePage'));
+const ChatPage = lazy(() => import('./components/chats/ChatPage'));
+const SignInPage = lazy(() => import('./components/signin/SignInPage'));
+const SignUpPage = lazy(() => import('./components/signup/SignUpPage'));
+const SingleChatPage = lazy(() => import('./components/chats/SingleChatPage'));
+const Profile = lazy(() => import('./components/Profile/Profile'));
+const Friends = lazy(() => import('./components/friends/Friends'));
+const FriendProfilePage = lazy(() => import('./components/friends/FriendProfilePage'));
+
+import useAuthStore from './store/store';
+import { Toaster } from 'react-hot-toast';
+import { Spinner } from '@radix-ui/themes';
 
 const App = () => {
-  const { isLoggedIn } = useAuthStore();
-  return (
-    <>
-      <Toaster />
-      <div className='app'>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/chats" element={
-            isLoggedIn ?
-              <ChatPage /> : <SignInPage />
-          } />
-          <Route path="/chats/:chatId" element={<SingleChatPage />} />
-          <Route path="/login" element={<SignInPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/profile" element={
-            isLoggedIn ? <Profile /> : <SignInPage />
-          } />
-        </Routes>
-      </div>
-    </>
-  )
-}
+	const { isLoggedIn, getUser } = useAuthStore();
+
+	useEffect(() => {
+		const getCurrentUser = async () => {
+			await getUser();
+		};
+		getCurrentUser();
+	}, []);
+
+	return (
+		<>
+			<Toaster />
+			<div className="app">
+				<Suspense fallback={
+					<div className='flex justify-center items-center h-screen'>
+						<Spinner size="3" loading />
+					</div>
+				}>
+					<Routes>
+						<Route path="/" element={<HomePage />} />
+						<Route
+							path="/chats"
+							element={isLoggedIn ? <ChatPage /> : <SignInPage />}
+						/>
+						<Route path="/chats/:chatId" element={<SingleChatPage />} />
+						<Route path="/friends" element={<Friends />} />
+						<Route path="/login" element={<SignInPage />} />
+						<Route path="/signup" element={<SignUpPage />} />
+						<Route
+							path="/profile"
+							element={isLoggedIn ? <Profile /> : <SignInPage />}
+						/>
+						<Route
+							path="/profile/:id"
+							element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />}
+						/>
+					</Routes>
+				</Suspense>
+			</div>
+		</>
+	);
+};
+
 export default App;

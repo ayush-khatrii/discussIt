@@ -1,10 +1,11 @@
-import { Button, Container, Dialog, Flex, Heading, Spinner, Text, TextField } from '@radix-ui/themes';
+import { AlertDialog, Button, Container, Dialog, Flex, Heading, Spinner, Text, TextField } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import useAuthStore from '../../store/store';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import { FaRegEdit } from "react-icons/fa";
+import { MdDeleteOutline } from "react-icons/md";
 
 const Profile = () => {
   const { getUser, isLoading } = useAuthStore();
@@ -35,7 +36,7 @@ const Profile = () => {
       <div className='absolute top-5 right-5'>
         <Sidebar />
       </div>
-      <div className="h-screen max-w-7xl mx-auto py-8">
+      <div className="h-screen max-w-xl mx-auto py-8">
         <Container className="px-2 mx-auto">
           <h1 className="text-left px-8 lg:text-center font-bold my-5 text-xl">{user?.username}</h1>
           <div className="p-6">
@@ -62,7 +63,7 @@ const Profile = () => {
             </p>
             <p className='text-xl w-full'>{user?.bio || "Hello my name is ayush and i love coding qkej5tjeoityeh jrghuimuerhgkueh  💘💘💘💘💘💘💘💘"}</p>
           </div>
-          <div className='px-5'>
+          <div className='px-5 space-x-3'>
             <Dialog.Root>
               <Dialog.Trigger>
                 <Button>
@@ -124,6 +125,32 @@ const Profile = () => {
                 </Flex>
               </Dialog.Content>
             </Dialog.Root>
+            <AlertDialog.Root>
+              <AlertDialog.Trigger>
+                <Button color="red">
+                  <MdDeleteOutline size="18" /> Delete Account
+                </Button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Content maxWidth="450px">
+                <AlertDialog.Title>Delete Account</AlertDialog.Title>
+                <AlertDialog.Description size="2">
+                  Are you sure want to delete your account?
+                </AlertDialog.Description>
+
+                <Flex gap="3" mt="4" justify="end">
+                  <AlertDialog.Cancel>
+                    <Button variant="soft" color="gray">
+                      Cancel
+                    </Button>
+                  </AlertDialog.Cancel>
+                  <AlertDialog.Action>
+                    <Button variant="solid" color="red">
+                      Delete Account
+                    </Button>
+                  </AlertDialog.Action>
+                </Flex>
+              </AlertDialog.Content>
+            </AlertDialog.Root>
           </div>
         </Container>
       </div>
