@@ -208,11 +208,30 @@ const getAllFriendRequests = async (req, res, next) => {
         next(error);
     }
 }
+const searchUser = async (req, res, next) => {
+    try {
+        // search user from db
+        const { name } = req.query;
+        const foundUser = await User.find({
+            $or: [
+                { username: { $regex: name, $options: "i" } },
+                { fullName: { $regex: name, $options: "i" } },
+            ],
+        }).select("username fullName avatar.avatar_url");
+        if (!foundUser || foundUser.length === 0) {
+            return next(errorHandler(404, "User not found!"));
+        }
+        res.status(200).json({ success: true, foundUser });
+    } catch (error) {
+        next(error);
+    }
+}
 export default {
     getProfile,
     updateProfile,
     deleteProfile,
     sendFriendRequest,
     acceptFriendRequest,
-    getAllFriendRequests
+    getAllFriendRequests,
+    searchUser
 }

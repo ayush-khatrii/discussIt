@@ -13,5 +13,6 @@ router.delete("/delete/:userId", verifyToken, userController.deleteProfile);
 router.put("/send-request", verifyToken, userController.sendFriendRequest);
 router.put("/accept-request", verifyToken, userController.acceptFriendRequest);
 router.get("/all-friend-requests", verifyToken, userController.getAllFriendRequests);
+router.get("/search", verifyToken, userController.searchUser);
 
 export default router;
