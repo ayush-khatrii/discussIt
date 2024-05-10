@@ -2,7 +2,6 @@ import { Avatar, Box, Flex } from '@radix-ui/themes'
 import React, { useEffect, useState } from 'react'
 import { IoMdNotifications } from "react-icons/io";
 import { useRouter } from "next/navigation"
-import useAuthStore from '@/store/store';
 import toast from 'react-hot-toast';
 const Navbar = () => {
 

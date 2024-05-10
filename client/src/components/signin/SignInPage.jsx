@@ -1,5 +1,5 @@
 "use client"
-import useAuthStore from '../../store/store';
+import useAuthStore from '../../store/authstore';
 import { Button, Card, Container, Flex, Text, TextField } from '@radix-ui/themes';
 import React, { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';

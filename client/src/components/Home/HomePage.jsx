@@ -1,7 +1,7 @@
 import React from 'react';
 import { BsChatSquareHeart } from "react-icons/bs";
 import { Button, Container, Heading } from '@radix-ui/themes';
-import useAuthStore from '../../store/store';
+import useAuthStore from '../../store/authstore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 

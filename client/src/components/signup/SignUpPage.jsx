@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Button, Flex, Radio, Text, TextField } from '@radix-ui/themes';
 import * as yup from 'yup';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
-import useAuthStore from '../../store/store';
-import toast, { Toaster } from 'react-hot-toast';
+import useAuthStore from '../../store/authstore';
+import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SignUpPage = () => {

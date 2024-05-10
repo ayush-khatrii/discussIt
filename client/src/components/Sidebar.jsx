@@ -1,12 +1,12 @@
 "use client"
-import { Avatar, Box, Button, Flex, Heading, Text, Tooltip } from '@radix-ui/themes';
+import { Avatar, Box, Button, Flex, Heading, Separator, Text, Tooltip } from '@radix-ui/themes';
 import React, { useEffect, useRef, useState } from 'react'
 import { IoMdChatboxes, IoIosMenu } from "react-icons/io";
 import { FaUserGroup, FaAngleLeft, FaAngleRight } from "react-icons/fa6";
-import { IoSettings } from "react-icons/io5";
+import { FaUserPlus } from "react-icons/fa";
 import { MdGroups } from "react-icons/md";
 import { BiLogOutCircle, BiSearch } from "react-icons/bi";
-import useAuthStore from '../store/store';
+import useAuthStore from '../store/authstore';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from 'react-router-dom';
@@ -30,7 +30,7 @@ const navLinks = [
 	},
 ]
 
-const Sidebar = ({ position }) => {
+const Sidebar = () => {
 	const getUser = useAuthStore((state) => state.getUser);
 	const logout = useAuthStore((state) => state.logout);
 	const isLoading = useAuthStore((state) => state.isLoading);
@@ -79,14 +79,8 @@ const Sidebar = ({ position }) => {
 		<>
 			<aside ref={sidebarRef} className={`dark:bg-black z-50 ${isOpen ? 'w-64 h-screen ' : 'w-0'} flex  justify-between flex-col transition-all duration-300 ease-in-out h-screen fixed right-0 top-0`}>
 				<Flex direction="column">
-					<Flex align="center" p="4" mb="5" gap="4">
-						<Avatar
-							radius='full'
-							src={user?.avatar?.avatar_url}
-						/>
-						<Heading>{user?.username}</Heading>
-					</Flex>
-					<ul className='flex flex-col gap-4 w-full'>
+					<h1 className='text-3xl font-bold text-blue-500 px-5 my-5'>Discuss-It</h1>
+					<ul className='flex flex-col gap-2 w-full'>
 						{
 							navLinks.map((item, index) => (
 								<Link key={index} to={item.path}>
@@ -105,22 +99,40 @@ const Sidebar = ({ position }) => {
 						}
 					</ul>
 				</Flex>
-				<div className='flex flex-col gap-3 mb-10'>
-					<Link to={`/profile`} className='flex justify-center gap-3 items-center bg-white text-black hover:bg-zinc-200 px-5 py-2 cursor-pointer rounded-md mx-5'>
-						<FaUserCircle size="1.35rem" />
-						<Text as='p'>
-							Profile
-						</Text>
+				<ul className='mb-5 flex flex-col gap-2 w-full'>
+					<Link>
+						<li className='flex justify-start items-center gap-3 hover:bg-zinc-900 px-5 py-2 cursor-pointer  w-full'>
+							<span className='flex justify-start items-start text-center gap-2'>
+								<FaUserPlus size="1.35rem" />
+							</span>
+							<p>
+								Friend Requests
+							</p>
+						</li>
 					</Link>
-					<button className='flex justify-center gap-3 items-center border hover:bg-zinc-400 px-5 py-2 cursor-pointer rounded-md mx-5' onClick={handleLogout}>
-						<BiLogOutCircle size="1.25rem" />
-						<Text>
-							Logout
-						</Text>
-					</button>
-				</div>
+					<Link>
+						<li className='flex justify-start items-center gap-3 hover:bg-zinc-900 px-5 py-2 cursor-pointer  w-full'>
+							<span className='flex justify-start items-start text-center gap-2'>
+								<BiLogOutCircle size="1.25rem" />
+							</span>
+							<p>
+								Logout
+							</p>
+						</li>
+					</Link>
+					<Separator size="4" orientation="" />
+					<Link to={`/profile`}>
+						<Flex align="center" px="3" mt="4" gap="4">
+							<Avatar
+								radius='full'
+								src={user?.avatar?.avatar_url}
+							/>
+							<Heading>{user?.username}</Heading>
+						</Flex>
+					</Link>
+				</ul>
 			</aside>
-			<Box onClick={() => setIsOpen(!isOpen)} className={` ${!isOpen && "border"} z-50 absolute ${position} right-4 cursor-pointer ${!isOpen && "bg-[#101010]"} p-2 rounded-full`}>
+			<Box onClick={() => setIsOpen(!isOpen)} className={` ${!isOpen && "border"} z-50 absolute right-4 cursor-pointer ${!isOpen && "bg-[#101010]"} p-2 rounded-full`}>
 				{!isOpen && <IoIosMenu size={"1.5rem"} />}
 			</Box>
 		</>

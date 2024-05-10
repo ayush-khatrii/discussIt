@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom'
 import { IoSearchOutline } from "react-icons/io5";
 import { TbCirclePlus } from "react-icons/tb";
 import { IoCheckmark } from "react-icons/io5";
+import Sidebar from "../Sidebar";
+
 const users = [
   {
     fullName: "Gautam Ghanshani",
@@ -52,11 +54,12 @@ const Friends = () => {
     return friendRequests.includes(username);
   };
 
-  console.log(friendRequests)
-
-  const [state, setState] = useState(false)
+  const [state, setState] = useState(false);
   return (
     <div>
+      <div className='absolute top-5 right-2'>
+        <Sidebar />
+      </div>
       <div className='flex justify-center items-center text-center gap-3 p-5'>
         <h1 className='text-3xl'>
           Your Friends
@@ -64,7 +67,7 @@ const Friends = () => {
       </div>
       <Flex direction="column" gap="5" p="5">
         {users.map((user, index) => (
-          <Link key={index} to={`/profile/${user.username}`}>
+          <Link key={index} to={`/friend/${user.username}`}>
             <div className='p-3'>
               <Flex gap="3" justify="between" align="center">
                 <Flex gap="3" justify="center" align="center">

@@ -4,6 +4,7 @@ import { MdSearch } from "react-icons/md";
 import { GoDotFill } from "react-icons/go";
 import Sidebar from '../Sidebar'
 import { Link } from 'react-router-dom';
+import { IoMdNotifications } from "react-icons/io";
 
 const users = [
 	{
@@ -49,22 +50,36 @@ const users = [
 ]
 const ChatsPage = () => {
 
+	if (!users) {
+		return (
+			<div>
+				<h1>No Chats Found! Click on the  + icon to create a new chat </h1>
+			</div>
+		)
+	}
+
 	return (
 		<>
+			<div className='absolute top-5 right-2'>
+				<Sidebar />
+			</div>
+			<div className='absolute top-6 right-20 cursor-pointer'>
+				<IoMdNotifications size="30" />
+			</div>
 			{/* <Navbar /> */}
-			<Sidebar />
-			<h1 className='font-bold text-2xl md:text-4xl m-5'>Discuss-It</h1>
+			<div className='flex justify-between items-center text-center gap-3'>
+				<h1 className='font-bold text-2xl md:text-4xl m-5'>Discuss-It</h1>
+			</div>
 			<Separator my="3" size="4" />
-			<div className='flex flex-col px-5 my-5'>
+			<div className='flex flex-col px-5 py-2'>
 				<div className='flex justify-start m-5 items-center'>
-					{/* <h1 className='text-2xl font-semibold text-center mx-5 mb-8'>Your chats</h1> */}
 					<TextField.Root placeholder="Search chats">
 						<TextField.Slot>
 							<MdSearch size="20" />
 						</TextField.Slot>
 					</TextField.Root>
 				</div>
-				{users.map((user, index) => (
+				{users?.map((user, index) => (
 					<Link key={index} to={`/chats/${user.username}`}>
 						<div className='p-3'>
 							<Flex gap="3" justify="between" align="center">

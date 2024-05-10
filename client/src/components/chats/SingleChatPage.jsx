@@ -1,34 +1,48 @@
-"use client";
-
+import React, { useState, useEffect, useRef } from 'react';
 import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, TextField } from '@radix-ui/themes';
 import { RiSendPlaneFill } from "react-icons/ri";
 import { IoMdAttach, IoMdCopy } from "react-icons/io";
-import { useState } from 'react';
 import { CiClock2 } from "react-icons/ci";
 import { SlDocs } from "react-icons/sl";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { MdDeleteOutline } from "react-icons/md";
 import { format } from "date-fns";
 import { useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
 const SingleChatPage = () => {
-
 	const { chatId } = useParams();
 	const [message, setMessage] = useState({
 		sender: "",
 		content: "",
 		attachment: null,
 	});
-
 	const [chatData, setChatData] = useState([]);
+	const [filePreview, setFilePreview] = useState(null);
+	const scrollRef = useRef(null);
+
+	useEffect(() => {
+		// Scroll to the bottom of the chat area when chatData changes
+		if (scrollRef.current) {
+			scrollRef.current.scrollTo({
+				top: scrollRef.current.scrollHeight,
+				behavior: 'smooth'
+			});
+		}
+	}, [chatData]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		if (name === 'attachment') {
+			const file = e.target.files[0];
+			if (file.type.startsWith('image')) {
+				setFilePreview(URL.createObjectURL(file)); // Set image preview
+			} else if (file.type.startsWith('video')) {
+				setFilePreview(URL.createObjectURL(file)); // Set video preview
+			}
 			setMessage({
 				...message,
-				[name]: e.target.files[0],
+				[name]: file,
 			});
 		} else {
 			setMessage({
@@ -55,6 +69,7 @@ const SingleChatPage = () => {
 			content: "",
 			attachment: null,
 		});
+		setFilePreview(null); // Clear file preview after sending
 	}
 
 	const handleCopy = (message) => {
@@ -82,7 +97,7 @@ const SingleChatPage = () => {
 					</Flex>
 				</Box>
 
-				<ScrollArea type="always" scrollbars="vertical" className="flex-1 overflow-y-auto">
+				<ScrollArea ref={scrollRef} type="always" scrollbars="vertical" className="flex-1 overflow-y-auto">
 					<div className="flex flex-col gap-2 px-5 py-2">
 						{chatData?.map((item, index) => (
 							<div key={index} className={`flex justify-start cursor-pointer`}>
@@ -131,6 +146,15 @@ const SingleChatPage = () => {
 
 				<form onSubmit={handleSubmit}>
 					<Flex justify="center" items="center" className="p-3 pb-5">
+						{filePreview && (
+							<>
+								{filePreview.startsWith('data:image') ? (
+									<img src={filePreview} alt="File Preview" className="w-12 h-12 rounded-lg mx-2" />
+								) : (
+									<video src={filePreview} controls className="w-12 h-12 rounded-lg mx-2" />
+								)}
+							</>
+						)}
 						<TextField.Root size="3" radius='medium' name='content' value={message.content} onChange={handleChange} placeholder='Type a message...' className="flex-grow rounded-lg  mx-2" >
 							<TextField.Slot>
 								<DropdownMenu.Root>

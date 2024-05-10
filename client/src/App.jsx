@@ -9,10 +9,14 @@ const SingleChatPage = lazy(() => import('./components/chats/SingleChatPage'));
 const Profile = lazy(() => import('./components/Profile/Profile'));
 const Friends = lazy(() => import('./components/friends/Friends'));
 const FriendProfilePage = lazy(() => import('./components/friends/FriendProfilePage'));
+const ErrorPage = lazy(() => import('./components/ErrorPage'));
+const GroupsPage = lazy(() => import('./components/groups/GroupsPage'));
+const SingleGroupPage = lazy(() => import('./components/groups/SingleGroupPage'));
+const SingleGroupInfo = lazy(() => import('./components/groups/SingleGroupInfo'));
 
-import useAuthStore from './store/store';
+import Loader from "./components/Loader";
+import useAuthStore from './store/authstore';
 import { Toaster } from 'react-hot-toast';
-import { Spinner } from '@radix-ui/themes';
 
 const App = () => {
 	const { isLoggedIn, getUser } = useAuthStore();
@@ -30,27 +34,23 @@ const App = () => {
 			<div className="app">
 				<Suspense fallback={
 					<div className='flex justify-center items-center h-screen'>
-						<Spinner size="3" loading />
+						<Loader />
 					</div>
 				}>
 					<Routes>
-						<Route path="/" element={<HomePage />} />
-						<Route
-							path="/chats"
-							element={isLoggedIn ? <ChatPage /> : <SignInPage />}
-						/>
-						<Route path="/chats/:chatId" element={<SingleChatPage />} />
-						<Route path="/friends" element={<Friends />} />
-						<Route path="/login" element={<SignInPage />} />
-						<Route path="/signup" element={<SignUpPage />} />
-						<Route
-							path="/profile"
-							element={isLoggedIn ? <Profile /> : <SignInPage />}
-						/>
-						<Route
-							path="/profile/:id"
-							element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />}
-						/>
+						<Route path="/" element={isLoggedIn ? <ChatPage /> : <HomePage />} />
+						<Route path="/chats" element={isLoggedIn ? <ChatPage /> : <SignInPage />} />
+						<Route path="/chats/:chatId" element={isLoggedIn ? <SingleChatPage /> : <SignInPage />} />
+						<Route path="/groups" element={isLoggedIn ? <GroupsPage /> : <SignInPage />} />
+						<Route path="/groups/:groupId" element={isLoggedIn ? <SingleGroupPage /> : <SignInPage />} />
+						<Route path="/groups/:groupId/info" element={isLoggedIn ? <SingleGroupInfo /> : <SignInPage />} />
+						<Route path="/friends" element={isLoggedIn ? <Friends /> : <SignInPage />} />
+						<Route path="/login" element={isLoggedIn ? <ChatPage /> : <SignInPage />} />
+						<Route path="/signup" element={isLoggedIn ? <ChatPage /> : <SignUpPage />} />
+						<Route path="/profile" element={isLoggedIn ? <Profile /> : <SignInPage />} />
+						<Route path="/friend/:id" element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />} />
+						{/* error route */}
+						<Route path="*" element={<ErrorPage />} />
 					</Routes>
 				</Suspense>
 			</div>
