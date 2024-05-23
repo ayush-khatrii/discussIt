@@ -53,3 +53,25 @@ export const verifyAdmin = async (req, res, next) => {
   }
 };
 
+export const socketAuth = async (err, socket, next) => {
+  try {
+    if (err) {
+      return next(err)
+    }
+    const authToken = socket.request.cookies['token'];
+    console.log(authToken);
+    if (!authToken) {
+      return next(errorHandler(401, "Please login  first!"));
+    }
+    const decoded = jwt.verify(authToken, process.env.JWT_SECRET);
+    const foundUser = await User.findById(decoded.userId).select("-password");
+    if (!foundUser) {
+      return next(errorHandler(401, "User not found!"));
+    }
+    socket.user = foundUser;
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+}

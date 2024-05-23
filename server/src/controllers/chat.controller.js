@@ -261,6 +261,33 @@ const leaveGroup = async (req, res, next) => {
 	}
 };
 
+const getChatDetails = async (req, res, next) => {
+
+	try {
+
+		const { chatId } = req.params;
+		if (req.query.populate === "true") {
+			const foundChat = await Chat.findById(chatId).populate({
+				path: "members",
+				select: "fullName avatar",
+			});
+			if (!foundChat) {
+				return next(errorHandler(404, "Chat not found!"));
+			}
+			res.status(200).json({ success: true, foundChat });
+		}
+		else {
+			const foundChat = await Chat.findById(chatId);
+			if (!foundChat) {
+				return next(errorHandler(404, "Chat not found!"));
+			}
+			res.status(200).json({ success: true, foundChat });
+		}
+	} catch (error) {
+		next(error);
+	}
+}
+
 export default {
 	createGroupChat,
 	updateGroupChat,
@@ -268,5 +295,6 @@ export default {
 	addGroupMembers,
 	removeGroupMembers,
 	getMyChats,
+	getChatDetails,
 	leaveGroup
 };
