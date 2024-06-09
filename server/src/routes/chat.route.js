@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get("/my-chats", verifyToken, chatController.getMyChats);
 router.get("/:chatId", verifyToken, chatController.getChatDetails);
+router.get("/:chatId/messages", verifyToken, chatController.getMessages);
+router.delete("/delete/messages/:messageId", verifyToken, chatController.deleteMessage);
 
 router.post("/create-group", verifyToken, chatController.createGroupChat);
 

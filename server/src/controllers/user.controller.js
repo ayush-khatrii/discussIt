@@ -4,11 +4,37 @@ import { removeExistingFile, uploadFile } from "../utils/cloudinary.js";
 import bcrypt from "bcryptjs";
 import errorHandler from "../utils/errorHandler.js";
 import Chat from "../models/chat.model.js";
+import { getOtherMember } from "../utils/helper.js";
 
-// Get user profile
+// Get current user profile
 const getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user)
+            .select("-password -avatar.public_id")
+        if (!user) {
+            return next(errorHandler(404, 'User not found!'));
+        }
+        const userChat = await Chat.find({ members: req.user, isGroupChat: false });
+        const totalFriends = userChat.length;
+        const userData = {
+            _id: user._id,
+            totalFriends,
+            fullName: user.fullName,
+            username: user.username,
+            bio: user.bio,
+            avatar: user.avatar.avatar_url
+        }
+
+        return res.status(200).json(userData);
+    } catch (error) {
+        next(error)
+    }
+}
+// Get user profile
+const getUserProfile = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId)
             .select("-password -avatar.public_id")
         if (!user) {
             return next(errorHandler(404, 'User not found!'));
@@ -136,9 +162,13 @@ const acceptFriendRequest = async (req, res, next) => {
         const { requestId, accept } = req.body;
 
         const request = await Request.findById(requestId)
-            .populate("sender", "fullName")
-            .populate("receiver", "fullName");
+            .populate("sender", "fullName username")
+            .populate("receiver", "fullName username");
 
+        // if alreardy accepted
+        if (request.status === "accepted") {
+            return next(errorHandler(200, "Friend request already accepted!"));
+        }
         if (!request) {
             return next(errorHandler(404, "Request not found!"));
         }
@@ -153,7 +183,14 @@ const acceptFriendRequest = async (req, res, next) => {
         }
 
         const members = [request.sender._id, request.receiver._id];
+        // Checkin if chat already exists
+        const existingChat = await Chat.findOne({
+            members: { $all: members }
+        });
 
+        if (existingChat) {
+            return next(errorHandler(400, "You are already friends!"));
+        }
         await Promise.all([
             Chat.create({
                 members,
@@ -162,7 +199,7 @@ const acceptFriendRequest = async (req, res, next) => {
             request.deleteOne(),
         ]);
 
-        // Socket implementation
+        // Socket implementation           
 
 
 
@@ -182,19 +219,18 @@ const getAllFriendRequests = async (req, res, next) => {
 
         const allRequests = await Request.find(
             { receiver: req.user }
-        ).populate("sender", "fullName avatar");
+        ).populate("sender", "fullName username avatar");
 
         if (!allRequests || allRequests.length === 0) {
-            return next(errorHandler(404, "No pending friend requests found!"));
+            return res.status(200).json({ message: "No pending friend requests found!" });
         }
 
-
-
-        const friendRequests = allRequests.map(({ _id, sender, fullName, avatar }) => ({
+        const friendRequests = allRequests.map(({ _id, sender, fullName, username, avatar }) => ({
             _id,
             sender: {
                 _id: sender._id,
                 fullName: sender.fullName,
+                username: sender.username,
                 avatar: sender.avatar.avatar_url
             }
         }));
@@ -227,6 +263,7 @@ const searchUser = async (req, res, next) => {
     }
 }
 export default {
+    getUserProfile,
     getProfile,
     updateProfile,
     deleteProfile,

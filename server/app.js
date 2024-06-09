@@ -14,7 +14,6 @@ import authRouter from "./src/routes/auth.route.js";
 import chatRouter from "./src/routes/chat.route.js";
 import userRouter from "./src/routes/user.route.js";
 import adminRouter from "./src/routes/admin.route.js";
-
 // Connection
 import connectDB from "./src/db/connectDB.js";
 const port = process.env.PORT || 5000;
@@ -25,8 +24,8 @@ const server = createServer(app);
 
 // Socket-io Initialization
 const getSockets = (users) => {
-  const sockets = users.map((user) => usersocketIDs.get(user._id.toString()));
-  return sockets
+  const sockets = users?.map((user) => usersocketIDs.get(user?.toString()));
+  return sockets;
 }
 const io = new Server(server, {
   cors: {
@@ -61,11 +60,13 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   const user = socket.user;
   usersocketIDs.set(user._id.toString(), socket.id);
-  console.log(usersocketIDs)
-  socket.broadcast.emit("welcome", `Welcome ${socket.id} to the chat`)
+
+  socket.broadcast.emit("welcome", `Welcome ${socket.id} to the chat`);
+
+
+
   // send  message realtime message from server to client
   socket.on("new-message", async ({ chat, members, content }) => {
-
     const receivedMessage = {
       content,
       _id: uuidv4(),

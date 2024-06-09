@@ -2,6 +2,8 @@ import Chat from "../models/chat.model.js";
 import User from "../models/user.model.js";
 import errorHandler from "../utils/errorHandler.js";
 import { uploadFile, removeExistingFile } from "../utils/cloudinary.js";
+import { getOtherMember } from "../utils/helper.js";
+import Message from "../models/message.model.js";
 
 
 // Create group chat
@@ -128,17 +130,19 @@ const deleteGroupChat = async (req, res, next) => {
 const getMyChats = async (req, res, next) => {
 	try {
 		const myChats = await Chat.find({ members: req.user })
-			.populate("members", "fullName");
+			.populate("members", "fullName avatar").select("-password");
+		console.log(myChats)
 
 		if (!myChats || myChats.length === 0) {
 			return next(errorHandler(404, "No chats found!"));
 		}
 		// only returning response of groupAvatar , chat id , members list with id excluding the current user and fullName , isgroupChat 
 		const transformedChats = myChats.map(chat => {
+			const otherMember = getOtherMember(chat.members, req.user);
 			return {
 				groupAdmin: chat.groupAdmin,
-				name: chat.name,
-				groupAvatar: chat.groupAvatar,
+				name: chat.isGroupChat ? chat.name : otherMember.fullName,
+				avatar: chat.isGroupChat ? chat.groupAvatar.avatar_url : otherMember.avatar.avatar_url,
 				_id: chat._id,
 				members: chat.members.filter(item => item._id.toString() !== req.user._id.toString()),
 				isGroupChat: chat.isGroupChat
@@ -262,32 +266,137 @@ const leaveGroup = async (req, res, next) => {
 };
 
 const getChatDetails = async (req, res, next) => {
-
 	try {
 
 		const { chatId } = req.params;
 		if (req.query.populate === "true") {
-			const foundChat = await Chat.findById(chatId).populate({
-				path: "members",
-				select: "fullName avatar",
-			});
+			const foundChat = await Chat.findById(chatId)
+				.populate({
+					path: "members",
+					select: "fullName avatar",
+				});
+			const otherMember = getOtherMember(foundChat.members, req.user);
+			const chatdata = {
+				chatId: foundChat._id,
+				name: otherMember.fullName,
+				chatAvatar: otherMember?.avatar?.avatar_url,
+				members: foundChat.members.map(item => item._id.toString()),
+				otherMemberId: otherMember?._id,
+			}
 			if (!foundChat) {
 				return next(errorHandler(404, "Chat not found!"));
 			}
-			res.status(200).json({ success: true, foundChat });
+			res.status(200).json({ success: true, chatdata });
 		}
 		else {
 			const foundChat = await Chat.findById(chatId);
 			if (!foundChat) {
 				return next(errorHandler(404, "Chat not found!"));
 			}
-			res.status(200).json({ success: true, foundChat });
+			const chatDetails = {
+				chatId: foundChat._id,
+				name: foundChat.name,
+				members: foundChat.members.map(item => item._id.toString()),
+				otherMemberId: otherMember?._id,
+			}
+			res.status(200).json({ success: true, chatDetails });
 		}
 	} catch (error) {
 		next(error);
 	}
 }
 
+const createOneToOneChat = async (req, res, next) => {
+	try {
+		const { recipientId, content } = req.body;
+		const senderId = req.user._id;
+
+		if (!recipientId || !content) {
+			return next(errorHandler(400, "Please provide required fields"));
+		}
+
+		const recipient = await User.findById(recipientId);
+		if (!recipient) {
+			return next(errorHandler(404, "Recipient not found"));
+		}
+
+		// Check if a chat already exists between the users
+		let chat = await Chat.findOne({
+			isGroupChat: false,
+			members: { $all: [senderId, recipientId] }
+		});
+
+		if (!chat) {
+			chat = new Chat({
+				members: [senderId, recipientId],
+				isGroupChat: false
+			});
+			await chat.save();
+		}
+
+		const newMessage = new Message({
+			sender: senderId,
+			content,
+			chat: chat._id
+		});
+		await newMessage.save();
+
+		await chat.save();
+
+		res.status(201).json({ success: true, chat });
+	} catch (error) {
+		next(error);
+	}
+};
+
+const getMessages = async (req, res, next) => {
+	try {
+		const { chatId } = req.params;
+		const { page = 1 } = req.query;
+		const resultPerPage = 20;
+		const skip = (page - 1) * resultPerPage;
+
+		const chat = await Chat.findById(chatId);
+		if (!chat) {
+			return next(errorHandler(404, "Chat not found!"));
+		}
+		if (!chat.members.includes(req.user.toString())) {
+			return next(errorHandler(401, "You are not authorized to access this chat!"));
+		}
+		const [messages, totalMessages] = await Promise.all([
+			Message.find({ chat: chatId })
+				.populate("sender", "username")
+				.limit(resultPerPage)
+				.skip(skip)
+				.lean(),
+			Message.countDocuments({ chat: chatId }),
+		]);
+		const totalPages = Math.ceil(totalMessages / resultPerPage) || 0;
+
+		res.status(200).json({
+			success: true,
+			messages,
+			totalPages,
+			totalMessages
+		});
+	} catch (error) {
+		next(error);
+	}
+}
+const deleteMessage = async (req, res, next) => {
+	try {
+		const { messageId } = req.params;
+		const deletedMessage = await Message.findByIdAndDelete(messageId);
+		if (!deletedMessage) {
+			return next(errorHandler(404, "Message not found!"));
+		}
+
+		res.status(200).json({ success: true, message: "Message deleted successfully" });
+	} catch (error) {
+		next(error);
+	}
+
+}
 export default {
 	createGroupChat,
 	updateGroupChat,
@@ -296,5 +405,8 @@ export default {
 	removeGroupMembers,
 	getMyChats,
 	getChatDetails,
-	leaveGroup
+	leaveGroup,
+	createOneToOneChat,
+	getMessages,
+	deleteMessage
 };
