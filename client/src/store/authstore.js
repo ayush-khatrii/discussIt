@@ -45,8 +45,6 @@ const useAuthStore = create((set) => ({
 			});
 
 			const userData = await response.json();
-			console.log(userData);
-
 			if (!response.ok) {
 				throw new Error(userData.message)
 			}
@@ -92,7 +90,6 @@ const useAuthStore = create((set) => ({
 				credentials: 'include',
 			});
 			const userData = await response.json();
-
 			if (response.ok) {
 				set({ isLoggedIn: true });
 				return userData;

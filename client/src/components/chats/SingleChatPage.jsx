@@ -1,25 +1,80 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, TextField } from '@radix-ui/themes';
-import { RiSendPlaneFill } from "react-icons/ri";
-import { IoMdAttach, IoMdCopy } from "react-icons/io";
-import { CiClock2 } from "react-icons/ci";
-import { SlDocs } from "react-icons/sl";
 import toast from 'react-hot-toast';
-import { MdDeleteOutline } from "react-icons/md";
 import { format } from "date-fns";
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
+import { useSocket } from '../../socket';
+import useChatStore from '../../store/chatstore';
+import useAuthStore from '../../store/authstore';
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { IoMdAttach, IoMdCopy } from "react-icons/io";
+import { MdDeleteOutline } from "react-icons/md";
+import { SlDocs } from "react-icons/sl";
+import { CiClock2 } from "react-icons/ci";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { RiSendPlaneFill } from "react-icons/ri";
 
+// import Message from '../Message';
 const SingleChatPage = () => {
+	const socket = useSocket();
 	const { chatId } = useParams();
-	const [message, setMessage] = useState({
-		sender: "",
-		content: "",
-		attachment: null,
-	});
+
+	const { getChatDetails, getChatMessages, deleteMessage } = useChatStore();
+
+	const { getUser } = useAuthStore();
+	const [user, setUser] = useState([]);
+	const [members, setMembers] = useState([]);
+	const [message, setMessage] = useState("");
+	const [messages, setMessages] = useState([]);
+	const [oldMessages, setOldMessages] = useState([]);
 	const [chatData, setChatData] = useState([]);
-	const [filePreview, setFilePreview] = useState(null);
+	const [page, setPage] = useState(1);
+
+
+	const {
+		data,
+		error,
+		fetchNextPage,
+		hasNextPage,
+		isFetching,
+		isFetchingNextPage,
+		status
+	} = useInfiniteQuery({
+		queryKey: ['messages'],
+		queryFn: () => getChatMessages(chatId),
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage + 1
+	});
+
+	// console.log("data from useInfiniteQuery", data);
+
+
 	const scrollRef = useRef(null);
+	const fetchMsg = async () => {
+		const msg = await getChatMessages(chatId, page);
+		console.log(msg);
+		setOldMessages(msg);
+	}
+	useEffect(() => {
+		fetchMsg();
+	}, []);
+
+	console.log("oldMessages", oldMessages)
+
+	useEffect(() => {
+		const getchatdetails = async () => {
+			try {
+				const [userResponse, chatResponse] = await Promise.all([getUser(), getChatDetails(chatId, page)]);
+				setUser(userResponse);
+				setMembers(chatResponse.chatdata.members);
+				setChatData(chatResponse.chatdata);
+			} catch (error) {
+				console.log(error.message);
+			}
+		}
+		getchatdetails();
+	}, [chatId, getChatDetails, getUser, socket]);
 
 	useEffect(() => {
 		// Scroll to the bottom of the chat area when chatData changes
@@ -29,53 +84,44 @@ const SingleChatPage = () => {
 				behavior: 'smooth'
 			});
 		}
-	}, [chatData]);
+	}, [messages]);
 
 	const handleChange = (e) => {
-		const { name, value } = e.target;
-		if (name === 'attachment') {
-			const file = e.target.files[0];
-			if (file.type.startsWith('image')) {
-				setFilePreview(URL.createObjectURL(file)); // Set image preview
-			} else if (file.type.startsWith('video')) {
-				setFilePreview(URL.createObjectURL(file)); // Set video preview
-			}
-			setMessage({
-				...message,
-				[name]: file,
-			});
-		} else {
-			setMessage({
-				...message,
-				[name]: value,
-			});
-		}
+		setMessage(e.target.value);
 	}
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		// Handle form submission here
-		setChatData((prevMessage) => [
-			...prevMessage,
-			{
-				content: message.content,
-				timestamp: format(new Date(), 'dd-MM-yyyy, hh:mm a'),
-				attachment: message.attachment,
-			}
-		]);
-
-		setMessage({
-			sender: "",
-			content: "",
-			attachment: null,
-		});
-		setFilePreview(null); // Clear file preview after sending
+		socket.emit("new-message", { chat: chatId, members, content: message, })
+		setMessage("");
 	}
 
 	const handleCopy = (message) => {
 		navigator.clipboard.writeText(message);
 		toast.success("Message copied!")
 	}
+	const handleDeleteMessage = async (messageId) => {
+		const deletedMessage = await deleteMessage(messageId);
+		if (deletedMessage) {
+			toast.success("Message deleted!");
+			fetchMsg()
+		}
+	}
+	// Call-Back fucntion(useCallBack) for listining to realtime events
+	const getMessage = useCallback((data) => {
+		setMessages((prevMessages) => [...prevMessages, data.receivedMessage]);
+	}, []);
+
+	useEffect(() => {
+		socket.on("new-message", getMessage);
+
+		return () => {
+			socket.off("new-message", getMessage);
+		}
+	}, []);
+
+
+	// const allMessages = [...oldMessages?.messages, ...messages];
 
 	return (
 		<>
@@ -83,62 +129,111 @@ const SingleChatPage = () => {
 				<Sidebar />
 			</div>
 			<main className={`flex flex-col justify-between h-screen`}>
-				<Box as="div" className='bg-zinc-900 border-b border-zinc-700'>
-					<Flex align="center" gap="3" className="p-2">
-						<Avatar
-							radius="full"
-							size="4"
-							fallback="GG"
-						/>
-						<Flex direction="column" className="flex-1">
-							<h1 className="text-zinc-400 capitalize font-bold">{chatId}</h1>
-							<p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
+				<Link to={`/friend/${chatData.otherMemberId}`}>
+					<Box as="div" className='bg-zinc-900 border-b border-zinc-700'>
+						<Flex align="center" gap="3" className="p-2">
+							<Avatar
+								radius="full"
+								size="4"
+								src={chatData?.chatAvatar}
+							/>
+							<Flex direction="column" className="flex-1">
+								<h1 className="text-zinc-400 capitalize font-bold">{chatData?.name}</h1>
+								<p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
+							</Flex>
 						</Flex>
-					</Flex>
-				</Box>
-
+					</Box>
+				</Link>
 				<ScrollArea ref={scrollRef} type="always" scrollbars="vertical" className="flex-1 overflow-y-auto">
 					<div className="flex flex-col gap-2 px-5 py-2">
-						{chatData?.map((item, index) => (
-							<div key={index} className={`flex justify-start cursor-pointer`}>
-								<div className={`p-2 flex flex-col rounded-xl bg-zinc-800`}>
-									<div>
-										{item.attachment && item.attachment.type.startsWith('image') && (
-											<div className='aspect-w-16 aspect-h-9'>
-												<img src={URL.createObjectURL(item.attachment)} alt="Attachment" controls className="object-cover w-full h-52 rounded-xl" />
-											</div>
-										)}
-										{item.attachment && item.attachment.type.startsWith('video') && (
-											<div className='aspect-w-16 aspect-h-9'>
-												<video src={URL.createObjectURL(item.attachment)} controls className="object-cover w-full h-52 rounded-xl" />
-											</div>
-										)}
-									</div>
-									<div className='mt-1 flex items-center justify-between gap-2'>
-										<p className='w-full'>
-											{item.content}
-										</p>
-										<DropdownMenu.Root className="">
-											<DropdownMenu.Trigger>
-												<Button variant="ghost" radius='full'>
-													<DropdownMenu.TriggerIcon />
-												</Button>
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content>
-												<DropdownMenu.Item>
-													<CiClock2 size={20} />  {item.timestamp}</DropdownMenu.Item>
-												<DropdownMenu.Item onClick={() => handleCopy(item.content)}>
-													<IoMdCopy size={20} /> Copy
-												</DropdownMenu.Item>
-												<DropdownMenu.Separator />
-												<DropdownMenu.Item color="red">
+						{oldMessages?.messages?.map((item, index) => (
+							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
+								{
+									item?.sender?._id === user?._id &&
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											<Button variant="ghost" radius=''>
+												<HiOutlineDotsVertical />
+											</Button>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item>
+												<CiClock2 size={20} />  {format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}</DropdownMenu.Item>
+											<DropdownMenu.Item onClick={() => handleCopy(item.content)}>
+												<IoMdCopy size={20} /> Copy
+											</DropdownMenu.Item>
+											<div className={`${item?.sender?._id !== user?._id ? "hidden" : ""}`}>
+												<DropdownMenu.Item onClick={() => handleDeleteMessage(item._id)} color="red">
 													<MdDeleteOutline size={20} />
 													Delete message
 												</DropdownMenu.Item>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
+											</div>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								}
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950"}`}>
+									<div className='mt-1 flex items-center justify-between gap-2'>
+										<div>
+											<p className='w-full'>
+												{item.content}
+												{/* time */}
+											</p>
+											<p className='text-xs opacity-25 w-full'>
+												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy  ')}
+											</p>
+										</div>
 									</div>
 								</div>
+								{
+									item?.sender?._id !== user?._id &&
+									<Button variant="ghost" radius=''>
+										<HiOutlineDotsVertical />
+									</Button>
+								}
+							</div>
+						))}
+						{messages?.map((item, index) => (
+							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
+								{
+									item?.sender?._id === user?._id &&
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											<Button variant="ghost" radius=''>
+												<HiOutlineDotsVertical />
+											</Button>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item>
+												<CiClock2 size={20} />  {format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}</DropdownMenu.Item>
+											<DropdownMenu.Item onClick={() => handleCopy(item.content)}>
+												<IoMdCopy size={20} /> Copy
+											</DropdownMenu.Item>
+											<div className={`${item?.sender?._id !== user?._id ? "hidden" : ""}`}>
+												<DropdownMenu.Item onClick={() => handleDeleteMessage(item._id)} color="red">
+													<MdDeleteOutline size={20} />
+													Delete message
+												</DropdownMenu.Item>
+											</div>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								}
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950"}`}>
+									<div className='mt-1 flex items-center justify-between gap-2'>
+										<div>
+											<p className='w-full'>
+												{item.content}
+											</p>
+											<p className='text-xs opacity-25 w-full'>
+												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy  ')}
+											</p>
+										</div>
+									</div>
+								</div>
+								{
+									<Button variant="ghost" radius=''>
+										<HiOutlineDotsVertical />
+									</Button>
+								}
 							</div>
 						))}
 					</div>
@@ -146,16 +241,7 @@ const SingleChatPage = () => {
 
 				<form onSubmit={handleSubmit}>
 					<Flex justify="center" items="center" className="p-3 pb-5">
-						{filePreview && (
-							<>
-								{filePreview.startsWith('data:image') ? (
-									<img src={filePreview} alt="File Preview" className="w-12 h-12 rounded-lg mx-2" />
-								) : (
-									<video src={filePreview} controls className="w-12 h-12 rounded-lg mx-2" />
-								)}
-							</>
-						)}
-						<TextField.Root size="3" radius='medium' name='content' value={message.content} onChange={handleChange} placeholder='Type a message...' className="flex-grow rounded-lg  mx-2" >
+						<TextField.Root size="3" radius='medium' name='content' value={message} onChange={handleChange} placeholder='Type a message...' className="flex-grow rounded-lg  mx-2" >
 							<TextField.Slot>
 								<DropdownMenu.Root>
 									<DropdownMenu.Trigger>
@@ -168,7 +254,6 @@ const SingleChatPage = () => {
 											<SlDocs />
 											<span className="ml-2">Send File</span>
 										</label>
-										<input type="file" name="attachment" id="file-input" className="hidden" onChange={handleChange} />
 									</DropdownMenu.Content>
 								</DropdownMenu.Root>
 							</TextField.Slot>
@@ -178,7 +263,7 @@ const SingleChatPage = () => {
 						</Button>
 					</Flex>
 				</form>
-			</main>
+			</main >
 		</>
 	);
 };

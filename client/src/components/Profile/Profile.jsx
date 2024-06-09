@@ -21,6 +21,7 @@ const Profile = () => {
 		};
 		fetchUser();
 	}, []);
+	console.log(user.usr)
 	return (
 		<>
 			<div className='absolute top-5 right-5'>
@@ -38,13 +39,13 @@ const Profile = () => {
 											<div className='relative top-10 left-8'>
 												<Spinner size="3" className='z-50  object-cover w-full h-full' />
 											</div> :
-											<img src={user?.avatar?.avatar_url} alt="Avatar" className="object-cover w-full h-full" />
+											<img src={user?.avatar} alt="Avatar" className="object-cover w-full h-full" />
 									}
 								</div>
 								<h1 className='text-xl'>{user?.fullName}</h1>
 							</div>
 							<div className='text-center '>
-								<h1 className='text-4xl font-bold'>344</h1>
+								<h1 className='text-4xl font-bold'>{user?.totalFriends}</h1>
 								<p className='text-2xl'>Friends</p>
 							</div>
 						</div>

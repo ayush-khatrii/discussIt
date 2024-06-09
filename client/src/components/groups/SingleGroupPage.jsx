@@ -7,7 +7,7 @@ import { SlDocs } from "react-icons/sl";
 import toast from 'react-hot-toast';
 import { MdDeleteOutline } from "react-icons/md";
 import { format } from "date-fns";
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 
 const SingleGroupPage = () => {
@@ -90,8 +90,10 @@ const SingleGroupPage = () => {
               fallback="GG"
             />
             <Flex direction="column" className="flex-1">
-              <h1 className="text-zinc-400 capitalize font-bold">{groupId}</h1>
-              <p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
+              <Link to={`/groups/${groupId}/info`}>
+                <h1 className="text-zinc-400 capitalize font-bold">{groupId}</h1>
+                <p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
+              </Link>
             </Flex>
           </Flex>
         </Box>
@@ -122,14 +124,6 @@ const SingleGroupPage = () => {
                           )}
                         </div>
                       )}
-                      {/* <div className="flex items-center gap-2 mt-1">
-                        <Button variant="ghost" size="2" onClick={() => handleCopy(item.content)}>
-                          <IoMdCopy size={20} /> Copy
-                        </Button>
-                        <Button variant="ghost" size="2">
-                          <MdDeleteOutline size={20} /> Delete
-                        </Button>
-                      </div> */}
                     </div>
                   </div>
                 </div>

@@ -1,12 +1,12 @@
-import { Avatar, Box, Button, Card, Container, Dialog, Flex, ScrollArea, Text, TextField } from '@radix-ui/themes'
-import React, { useState } from 'react'
-import { FaUserGroup } from 'react-icons/fa6'
-import { GoDotFill } from 'react-icons/go'
-import { Link } from 'react-router-dom'
+import { Avatar, Button, Card, Dialog, Flex, ScrollArea, Text, TextField } from '@radix-ui/themes';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { IoSearchOutline } from "react-icons/io5";
 import { TbCirclePlus } from "react-icons/tb";
 import { IoCheckmark } from "react-icons/io5";
 import Sidebar from "../Sidebar";
+import useFriendsStore from '../../store/friendsStore';
+import toast from 'react-hot-toast';
 
 const users = [
   {
@@ -39,22 +39,40 @@ const users = [
     username: "jatt.khatri",
     fallback: "jk"
   },
-
 ];
 
-
 const Friends = () => {
-  const [friendRequests, setFriendRequests] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchedUsers, setSearchedUsers] = useState([]);
+  const { searchUser, sendFriendRequest } = useFriendsStore();
+  const [sentRequests, setSentRequests] = useState([]);
+  const [error, setError] = useState("");
 
-  const sendFriendRequest = (username) => {
-    setFriendRequests([...friendRequests, username]);
+  // Send Friend Request
+  const handleSendFriendRequest = async (userId) => {
+    try {
+      const response = await sendFriendRequest(userId);
+      setSentRequests([...sentRequests, userId]);
+      toast.success(response);
+    } catch (error) {
+      setError(error);
+      console.log(error.message);
+    }
   };
 
-  const isRequested = (username) => {
-    return friendRequests.includes(username);
+  // Search User
+  const handleSearchUser = async () => {
+    try {
+      console.log("searched user :: ", searchQuery);
+      const result = await searchUser(searchQuery);
+      setSearchedUsers(result);
+      console.log("Got these results ::::", result);
+    } catch (error) {
+      setError(error);
+      toast.error(error.message);
+    }
   };
 
-  const [state, setState] = useState(false);
   return (
     <div>
       <div className='absolute top-5 right-2'>
@@ -101,31 +119,41 @@ const Friends = () => {
           <Dialog.Content maxWidth="450px">
             <Dialog.Title> Add friends by sending a friend request</Dialog.Title>
             <Flex direction="column" gap="3" my="4" pb="4">
-              <TextField.Root placeholder="type...">
+              <TextField.Root
+                placeholder="type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}>
                 <TextField.Slot>
                   <IoSearchOutline height="16" width="16" />
                 </TextField.Slot>
+                <Button radius='none' onClick={handleSearchUser}>Search</Button>
               </TextField.Root>
             </Flex>
-            <ScrollArea type="always" scrollbars="vertical" style={{ height: 300 }}>
-              {users.map((item, index) => (
-                <Flex mr="5" key={index} align="center" mb="3" justify="between">
-                  <div className='flex items-center gap-3'>
-                    <Avatar
-                      radius='full'
-                      fallback={item.fallback}
-                    />
-                    <h1>{item.fullName}</h1>
-                  </div>
-                  <div className='space-x-2'>
-                    {!item.isFriend && !isRequested(item.username) ? (
-                      <Button onClick={() => sendFriendRequest(item.username)}>Add</Button>
-                    ) : (
-                      <Button variant="surface" color='green'><IoCheckmark color='green' /></Button>
-                    )}
-                  </div>
-                </Flex>
-              ))}
+            <ScrollArea type="always" scrollbars="vertical" style={{ height: searchedUsers?.length > 0 ? 300 : 50 }}>
+              {searchedUsers?.length > 0 &&
+                searchedUsers.map((item, index) => (
+                  <Flex mr="5" key={index} align="center" mb="3" justify="between">
+                    <div className='flex items-center gap-3'>
+                      <Avatar
+                        radius='full'
+                        src={item.avatar?.avatar_url}
+                      />
+                      <div>
+                        <h1 className='font-medium'>{item.fullName}</h1>
+                        <span className='text-zinc-400'>{item.username}</span>
+                      </div>
+                    </div>
+                    <div className='space-x-2'>
+                      {!sentRequests.includes(item._id) ? (
+                        <Button variant='outline' onClick={() => handleSendFriendRequest(item._id)}>Add</Button>
+                      ) : (
+                        <Button variant="surface" color='green'><IoCheckmark color='green' /></Button>
+                      )}
+                    </div>
+                  </Flex>
+                ))}
+              {searchedUsers?.length === 0 && <p className='text-center'>Search user to send friend request</p>}
+              {error && <p className='text-center'>{error && error.message}</p>}
             </ScrollArea>
             <Flex gap="3" mt="4" justify="end">
               <Dialog.Close>
@@ -138,7 +166,7 @@ const Friends = () => {
         </Dialog.Root>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Friends
+export default Friends;

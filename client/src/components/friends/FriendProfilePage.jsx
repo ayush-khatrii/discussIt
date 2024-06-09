@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Avatar, Button, Container, Flex } from "@radix-ui/themes";
 import Sidebar from "../Sidebar";
 import { SlCalender } from "react-icons/sl";
+import useUserStore from "../../store/userstore";
 
 const FriendProfilePage = () => {
-
+  const [friendProfile, setFriendProfile] = useState([]);
+  const { fetchUserProfile } = useUserStore();
+  const { id } = useParams();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await fetchUserProfile(id);
+      setFriendProfile(userData);
+    }
+    fetchUser();
+  }, []);
 
   return (
     <>
@@ -20,17 +30,21 @@ const FriendProfilePage = () => {
                 <div className="mb-2">
                   <Avatar
                     radius="full"
-                    fallback="h"
-                    size={{ base: "4", md: "5" }}
+                    // size={{ base: "7", md: "5" }}
+                    size="7"
+                    src={friendProfile.avatar?.avatar_url}
                   />
                 </div>
-                <h1 className='text-xl'>fullname</h1>
+                <h1 className='text-xl'>{friendProfile.fullName}</h1>
+                <h1 className='text-base opacity-50'>{friendProfile.username}</h1>
               </div>
             </div>
             <p className='text-zinc-700 font-medium text-xl'>
               Bio
             </p>
-            <p className='text-xl w-full'>Hello my name is ayush and i love coding qkej5tjeoityeh jrghuimuerhgkueh  💘💘💘💘💘💘💘💘</p>
+            <p className='text-xl w-full'>
+              {fetchUserProfile.bio && fetchUserProfile.bio}
+            </p>
           </div>
           <Flex align="center" justify="center" p="5">
             <SlCalender /><p className='px-3 opacity-50'>joined 1-02-2000</p>
