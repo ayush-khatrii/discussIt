@@ -99,7 +99,6 @@ const updateGroupChat = async (req, res, next) => {
 			updatedData.name = name;
 		}
 
-		console.log(updatedData)
 
 		const updatedChat = await Chat.findByIdAndUpdate(chatId, updatedData, { new: true });
 		res.status(200).json({ success: true, message: "Group chat updated successfully", updatedChat });
@@ -123,7 +122,9 @@ const deleteGroupChat = async (req, res, next) => {
 		await Chat.findByIdAndDelete(chatId);
 
 		res.status(200).json({ message: "Chat deleted successfully" });
-	} catch (error) { }
+	} catch (error) {
+		next(error);
+	}
 };
 
 // Get my chats
@@ -131,7 +132,6 @@ const getMyChats = async (req, res, next) => {
 	try {
 		const myChats = await Chat.find({ members: req.user })
 			.populate("members", "fullName avatar").select("-password");
-		console.log(myChats)
 
 		if (!myChats || myChats.length === 0) {
 			return next(errorHandler(404, "No chats found!"));
@@ -141,8 +141,8 @@ const getMyChats = async (req, res, next) => {
 			const otherMember = getOtherMember(chat.members, req.user);
 			return {
 				groupAdmin: chat.groupAdmin,
-				name: chat.isGroupChat ? chat.name : otherMember.fullName,
-				avatar: chat.isGroupChat ? chat.groupAvatar.avatar_url : otherMember.avatar.avatar_url,
+				name: chat.isGroupChat ? chat.name : otherMember?.fullName,
+				avatar: chat.isGroupChat ? chat?.groupAvatar?.avatar_url : otherMember?.avatar?.avatar_url,
 				_id: chat._id,
 				members: chat.members.filter(item => item._id.toString() !== req.user._id.toString()),
 				isGroupChat: chat.isGroupChat
@@ -352,7 +352,7 @@ const createOneToOneChat = async (req, res, next) => {
 const getMessages = async (req, res, next) => {
 	try {
 		const { chatId } = req.params;
-		const { page = 1 } = req.query;
+		const { page } = req.query;
 		const resultPerPage = 20;
 		const skip = (page - 1) * resultPerPage;
 

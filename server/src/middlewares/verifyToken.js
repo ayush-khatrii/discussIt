@@ -59,7 +59,6 @@ export const socketAuth = async (err, socket, next) => {
       return next(err)
     }
     const authToken = socket.request.cookies['token'];
-    console.log(authToken);
     if (!authToken) {
       return next(errorHandler(401, "Please login  first!"));
     }

@@ -132,26 +132,36 @@ const deleteProfile = async (req, res, next) => {
 const sendFriendRequest = async (req, res, next) => {
     try {
         const { userId } = req.body;
-        const request = await Request.findOne({
-            $or: [
-                { sender: userId, receiver: req.user },
-                { sender: req.user, receiver: userId }
-            ]
+        const sender = req.user;
+
+        const foundChat = await Chat.findOne({
+            isGroupChat: false,
+            members: { $all: [sender, userId] }
+        });
+        if (foundChat) {
+            return res.status(400).json({ success: false, requestStatus: "accepted", message: "You are already friends!" });
+        }
+        const existingRequest = await Request.findOne({
+            sender,
+            receiver: userId,
         });
 
-        if (request) {
-            return next(errorHandler(400, "Request already sent!"));
-        }
+        if (existingRequest) {
+            let requestStatus = existingRequest?.status;
+            if (existingRequest.status === "pending") {
+                return res.status(400).json({ success: false, requestStatus, message: "Request already sent!" });
+            } else if (existingRequest.status === "accepted") {
+                return res.status(400).json({ success: false, requestStatus, message: "You both are already friends!" });
+            }
+        } 5
+        // Checking if a chat already exists between the sender and the receiver
 
         const newRequest = new Request({
-            sender: req.user,
+            sender,
             receiver: userId
         });
-
         await newRequest.save();
-
-        res.status(200).json({ success: true, message: "Friend request sent!" });
-
+        res.status(200).json({ success: true, requestStatus, message: "Friend request sent!" });
     } catch (error) {
         next(error);
     }
@@ -172,18 +182,18 @@ const acceptFriendRequest = async (req, res, next) => {
         if (!request) {
             return next(errorHandler(404, "Request not found!"));
         }
-
+        // only you can accept request
         if (request.receiver._id.toString() !== req.user.toString()) {
             return next(errorHandler(400, "You are not allowed to accept this request!"));
         }
-
+        // if request rejected
         if (!accept) {
             await request.deleteOne();
             return res.status(200).json({ success: true, message: "Friend request rejected!" });
         }
 
         const members = [request.sender._id, request.receiver._id];
-        // Checkin if chat already exists
+        // Checking if chat already exists
         const existingChat = await Chat.findOne({
             members: { $all: members }
         });
@@ -192,11 +202,13 @@ const acceptFriendRequest = async (req, res, next) => {
             return next(errorHandler(400, "You are already friends!"));
         }
         await Promise.all([
+            request.updateOne({ status: "accepted" }),
             Chat.create({
                 members,
+                isGroupChat: false,
                 name: request.sender.fullName
             }),
-            request.deleteOne(),
+            // request.deleteOne(),
         ]);
 
         // Socket implementation           
@@ -218,14 +230,41 @@ const getAllFriendRequests = async (req, res, next) => {
     try {
 
         const allRequests = await Request.find(
-            { receiver: req.user }
+            {
+                status: "pending",
+                receiver: req.user
+            }
         ).populate("sender", "fullName username avatar");
+        console.log('recieved', allRequests);
+        const pendingRequests = allRequests.filter(request => request.status === "pending");
 
-        if (!allRequests || allRequests.length === 0) {
+        if (!pendingRequests || pendingRequests.length === 0) {
             return res.status(200).json({ message: "No pending friend requests found!" });
         }
+        if (allRequests.status === "pending") {
+            return res.status(200).json({ message: "No pending friend requests found!" });
+        }
+        // const senderIds = pendingRequests.map(request => request.sender._id);
+        // const exixstingChats = await Chat.find({
+        //     members: { $all: [req.user._id, { $in: senderIds }] }
+        // });
+        // filter the sender id
 
-        const friendRequests = allRequests.map(({ _id, sender, fullName, username, avatar }) => ({
+        // const request = await Request.findById(requestId)
+        //     .populate("sender", "fullName username")
+        //     .populate("receiver", "fullName username");
+
+        // const members = [request.sender._id, request.receiver._id];
+        // // Checking if chat already exists
+        // const existingChat = await Chat.find({
+        //     members: { $all: members }
+        // });
+
+        // if (existingChat) {
+        //     return next(errorHandler(400, "You are already friends!"));
+        // }
+
+        const friendRequests = pendingRequests.map(({ _id, sender }) => ({
             _id,
             sender: {
                 _id: sender._id,
@@ -244,6 +283,7 @@ const getAllFriendRequests = async (req, res, next) => {
         next(error);
     }
 }
+// Search User
 const searchUser = async (req, res, next) => {
     try {
         // search user from db
@@ -254,10 +294,34 @@ const searchUser = async (req, res, next) => {
                 { fullName: { $regex: name, $options: "i" } },
             ],
         }).select("username fullName avatar.avatar_url");
+
+        // return all user except the current user
+        const filteredUsers = foundUser.filter(user => user._id.toString() !== req.user.toString());
         if (!foundUser || foundUser.length === 0) {
             return next(errorHandler(404, "User not found!"));
         }
-        res.status(200).json({ success: true, foundUser });
+        // Check the request status for each user
+        const userWithRequestStatus = await Promise.all(
+            filteredUsers.map(async (user) => {
+                const request = await Request.findOne({
+                    $or: [
+                        { sender: req.user, receiver: user._id },
+                        { sender: user._id, receiver: req.user }
+                    ]
+                });
+                console.log(request)
+                return {
+                    _id: user._id,
+                    username: user.username,
+                    fullName: user.fullName,
+                    avatar: user.avatar.avatar_url,
+                    requestStatus: request?.status || "unknown"
+                };
+            })
+
+        );
+
+        res.status(200).json({ success: true, userWithRequestStatus });
     } catch (error) {
         next(error);
     }

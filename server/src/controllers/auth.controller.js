@@ -6,7 +6,7 @@ import errorHandler from "../utils/errorHandler.js";
 // SignUp Controller
 const handleSignUp = async (req, res, next) => {
   try {
-    const { fullName, password, username, gender } = req.body;
+    const { fullName, password, username, gender, bio } = req.body;
 
     // Validation
     if (!password || !username || !fullName || !gender) {
@@ -38,6 +38,7 @@ const handleSignUp = async (req, res, next) => {
       username,
       password: hashedPassword,
       gender,
+      bio,
       avatar
     });
 
