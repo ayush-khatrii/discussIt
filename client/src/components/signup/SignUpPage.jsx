@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Flex, Radio, Text, TextField } from '@radix-ui/themes';
+import { Button, Flex, Radio, Text, TextArea, TextField } from '@radix-ui/themes';
 import * as yup from 'yup';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 import useAuthStore from '../../store/authstore';
@@ -36,7 +36,7 @@ const SignUpPage = () => {
 			await validationSchema.validate(formData, { abortEarly: false });
 			await signup(formData.fullName, formData.password, formData.username, formData.gender);
 			toast.success('Account Created successfully!');
-			navigate("/chats");
+			navigate("/home");
 
 		} catch (error) {
 			if (error.name === 'ValidationError') {
@@ -60,7 +60,7 @@ const SignUpPage = () => {
 			.matches(/[A-Z]/, "Password must contain at least one uppercase letter")
 			.matches(/[a-z]/, "Password must contain at least one lowercase letter")
 			.matches(/[0-9]/, "Password contssword must contain at least one number")
-			.matches(/[!@#$%^&*()_,.<>{}|:]/, "Password mustain at least one special character"),
+			.matches(/[!@#$%^&*()_,.<>{}|:]/, "Password must c at least one special character"),
 		gender: yup.string().required("Gender is required"),
 	});
 
@@ -122,6 +122,9 @@ const SignUpPage = () => {
 										</div>
 									</TextField.Slot>
 								</TextField.Root>
+								<Text as="label">Bio</Text>
+								{/* for bio */}
+								<TextArea size="4" placeholder="Write your Bio" />
 								<Text as="label">Gender</Text>
 								{showError?.gender && <p className="text-red-500 text-sm">{showError.gender}</p>}
 								<Flex align="start" direction="column" gap="3">

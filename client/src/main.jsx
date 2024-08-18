@@ -11,14 +11,13 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
-
 const queryClient = new QueryClient()
 
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    <Theme appearance="dark">
+  <Theme appearance="dark">
       <QueryClientProvider client={queryClient}>
         <App />
       </QueryClientProvider>

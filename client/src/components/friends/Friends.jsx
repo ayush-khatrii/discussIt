@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { IoSearchOutline } from "react-icons/io5";
 import { TbCirclePlus } from "react-icons/tb";
 import { IoCheckmark } from "react-icons/io5";
-import Sidebar from "../Sidebar";
 import useFriendsStore from '../../store/friendsStore';
 import toast from 'react-hot-toast';
 
@@ -75,15 +74,12 @@ const Friends = () => {
 
   return (
     <div>
-      <div className='absolute top-5 right-2'>
-        <Sidebar />
-      </div>
       <div className='flex justify-center items-center text-center gap-3 p-5'>
         <h1 className='text-3xl'>
           Your Friends
         </h1>
       </div>
-      <Flex direction="column" gap="5" p="5">
+      {/* <Flex direction="column" gap="5" p="5">
         {users.map((user, index) => (
           <Link key={index} to={`/friend/${user.username}`}>
             <div className='p-3'>
@@ -106,7 +102,7 @@ const Friends = () => {
             </div>
           </Link>
         ))}
-      </Flex>
+      </Flex> */}
       <div className='fixed bottom-5 right-5'>
         <Dialog.Root>
           <Dialog.Trigger>
@@ -115,7 +111,6 @@ const Friends = () => {
               Add Friends
             </Button>
           </Dialog.Trigger>
-
           <Dialog.Content maxWidth="450px">
             <Dialog.Title> Add friends by sending a friend request</Dialog.Title>
             <Flex direction="column" gap="3" my="4" pb="4">
@@ -136,15 +131,15 @@ const Friends = () => {
                     <div className='flex items-center gap-3'>
                       <Avatar
                         radius='full'
-                        src={item.avatar?.avatar_url}
+                        src={item?.avatar?.avatar_url}
                       />
                       <div>
-                        <h1 className='font-medium'>{item.fullName}</h1>
+                        <h1 className='font-medium'>{item?.fullName}</h1>
                         <span className='text-zinc-400'>{item.username}</span>
                       </div>
                     </div>
                     <div className='space-x-2'>
-                      {!sentRequests.includes(item._id) ? (
+                      {!sentRequests.includes(item?._id) ? (
                         <Button variant='outline' onClick={() => handleSendFriendRequest(item._id)}>Add</Button>
                       ) : (
                         <Button variant="surface" color='green'><IoCheckmark color='green' /></Button>

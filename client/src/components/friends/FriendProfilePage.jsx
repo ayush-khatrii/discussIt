@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { Avatar, Button, Container, Flex } from "@radix-ui/themes";
-import Sidebar from "../Sidebar";
 import { SlCalender } from "react-icons/sl";
 import useUserStore from "../../store/userstore";
 
@@ -20,7 +19,6 @@ const FriendProfilePage = () => {
   return (
     <>
       <div className='absolute top-5 right-5'>
-        <Sidebar />
       </div>
       <div className="h-screen max-w-xl mx-auto py-8">
         <Container className="px-2 mx-auto">
@@ -35,7 +33,7 @@ const FriendProfilePage = () => {
                     src={friendProfile.avatar?.avatar_url}
                   />
                 </div>
-                <h1 className='text-xl'>{friendProfile.fullName}</h1>
+                <h1 className='text-xl'>{friendProfile?.fullName}</h1>
                 <h1 className='text-base opacity-50'>{friendProfile.username}</h1>
               </div>
             </div>
@@ -43,7 +41,7 @@ const FriendProfilePage = () => {
               Bio
             </p>
             <p className='text-xl w-full'>
-              {fetchUserProfile.bio && fetchUserProfile.bio}
+              {fetchUserProfile.bio}
             </p>
           </div>
           <Flex align="center" justify="center" p="5">

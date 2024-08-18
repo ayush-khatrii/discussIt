@@ -20,8 +20,9 @@ const useChatStore = create((set) => ({
       });
 
       const result = await response.json();
+      console.log(result);
       if (response.ok) {
-        return result.transformedChats;
+        set({ chats: result.transformedChats });
       }
     } catch (error) {
       console.error(error);

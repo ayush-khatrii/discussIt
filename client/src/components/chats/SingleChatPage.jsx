@@ -3,7 +3,8 @@ import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, TextField } from '
 import toast from 'react-hot-toast';
 import { format } from "date-fns";
 import { Link, useParams } from 'react-router-dom';
-import Sidebar from '../Sidebar';
+// import Sidebar from '../Sidebar';
+import { SidebarView } from '../SidebarView';
 import { useSocket } from '../../socket';
 import useChatStore from '../../store/chatstore';
 import useAuthStore from '../../store/authstore';
@@ -42,12 +43,12 @@ const SingleChatPage = () => {
 		status
 	} = useInfiniteQuery({
 		queryKey: ['messages'],
-		queryFn: () => getChatMessages(chatId),
+		queryFn: ({ pageParam = 1 }) => getChatMessages(chatId, pageParam),
 		initialPageParam: 0,
-		getNextPageParam: (lastPage) => lastPage + 1
+		getNextPageParam: (lastPage) => lastPage.nextPage
 	});
 
-	// console.log("data from useInfiniteQuery", data);
+	console.log("data from useInfiniteQuery", data);
 
 
 	const scrollRef = useRef(null);
@@ -125,36 +126,36 @@ const SingleChatPage = () => {
 
 	return (
 		<>
-			<div className='relative top-3'>
-				<Sidebar />
-			</div>
-			<main className={`flex flex-col justify-between h-screen`}>
-				<Link to={`/friend/${chatData.otherMemberId}`}>
-					<Box as="div" className='bg-zinc-900 border-b border-zinc-700'>
-						<Flex align="center" gap="3" className="p-2">
+			<main className={``}>
+				<Box as="div" className='bg-zinc-950  border-b border-zinc-900'>
+					<Flex align="center" gap="3" className="p-3 mx-5">
+						<Link to={`/friend/${chatData.otherMemberId}`}>
 							<Avatar
 								radius="full"
-								size="4"
+								size=""
 								src={chatData?.chatAvatar}
 							/>
-							<Flex direction="column" className="flex-1">
-								<h1 className="text-zinc-400 capitalize font-bold">{chatData?.name}</h1>
-								<p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
-							</Flex>
+						</Link>
+						<Flex direction="column" className="flex-1">
+							<h1 className="text-zinc-300 capitalize font-bold">{chatData?.name}</h1>
+							<p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
 						</Flex>
-					</Box>
-				</Link>
-				<ScrollArea ref={scrollRef} type="always" scrollbars="vertical" className="flex-1 overflow-y-auto">
-					<div className="flex flex-col gap-2 px-5 py-2">
+					</Flex>
+				</Box>
+				<ScrollArea ref={scrollRef} type="always" style={{ height: "80vh" }} scrollbars="vertical" className="" >
+					<div className="flex flex-col gap-2 px-5 py-5">
 						{oldMessages?.messages?.map((item, index) => (
 							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
+								{/* <div className='text-zinc-600'>
+									{format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}
+								</div> */}
 								{
 									item?.sender?._id === user?._id &&
 									<DropdownMenu.Root>
 										<DropdownMenu.Trigger>
-											<Button variant="ghost" radius=''>
+											<a href="#">
 												<HiOutlineDotsVertical />
-											</Button>
+											</a>
 										</DropdownMenu.Trigger>
 										<DropdownMenu.Content>
 											<DropdownMenu.Item>
@@ -171,26 +172,20 @@ const SingleChatPage = () => {
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>
 								}
-								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950"}`}>
-									<div className='mt-1 flex items-center justify-between gap-2'>
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950 border border-zinc-800"}`}>
+									<div className=''>
 										<div>
-											<p className='w-full'>
+											<p className='w-full text-zinc-300'>
 												{item.content}
-												{/* time */}
 											</p>
 											<p className='text-xs opacity-25 w-full'>
-												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy  ')}
+												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy')}
 											</p>
 										</div>
 									</div>
 								</div>
-								{
-									item?.sender?._id !== user?._id &&
-									<Button variant="ghost" radius=''>
-										<HiOutlineDotsVertical />
-									</Button>
-								}
 							</div>
+
 						))}
 						{messages?.map((item, index) => (
 							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
@@ -217,7 +212,7 @@ const SingleChatPage = () => {
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>
 								}
-								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950"}`}>
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950 border border-zinc-800"}`}>
 									<div className='mt-1 flex items-center justify-between gap-2'>
 										<div>
 											<p className='w-full'>
@@ -229,11 +224,6 @@ const SingleChatPage = () => {
 										</div>
 									</div>
 								</div>
-								{
-									<Button variant="ghost" radius=''>
-										<HiOutlineDotsVertical />
-									</Button>
-								}
 							</div>
 						))}
 					</div>
@@ -258,7 +248,7 @@ const SingleChatPage = () => {
 								</DropdownMenu.Root>
 							</TextField.Slot>
 						</TextField.Root>
-						<Button type='submit' disabled={message.content === ""} size="3" className="bg-blue-500 text-white rounded-full">
+						<Button type='submit' radius='full' as="a" disabled={message.content === ""} size="3" className="bg-blue-500 text-white rounded-full">
 							<RiSendPlaneFill />
 						</Button>
 					</Flex>

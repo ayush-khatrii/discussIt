@@ -2,7 +2,6 @@ import { AlertDialog, Button, Container, Dialog, Flex, Heading, Spinner, Text, T
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../Sidebar';
 import { FaRegEdit } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { SlCalender } from "react-icons/sl";
@@ -24,9 +23,6 @@ const Profile = () => {
 	console.log(user.usr)
 	return (
 		<>
-			<div className='absolute top-5 right-5'>
-				<Sidebar />
-			</div>
 			<div className="h-screen max-w-xl mx-auto py-8">
 				<Container className="px-2 mx-auto">
 					<h1 className="text-left px-8 lg:text-center font-bold my-5 text-xl">{user?.username}</h1>

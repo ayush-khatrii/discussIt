@@ -16,7 +16,6 @@ const useUserStore = create((set) => ({
         credentials: "include",
       });
       const result = await response.json();
-      console.log("User store ::::::", result);
       if (response.ok) {
         return result;
       } else {

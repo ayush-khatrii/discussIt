@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import config from '../constants/config';
-
+import { Navigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 const { SERVER_URL } = config;
-
 const useAuthStore = create((set) => ({
 	user: null,
 	isAdmin: false,
@@ -69,6 +69,8 @@ const useAuthStore = create((set) => ({
 			const result = response.json();
 			if (response.ok) {
 				set({ user: null });
+				set({ isLoggedIn: false });
+				toast.success('Logout successful!');
 			}
 
 			else {
@@ -92,6 +94,7 @@ const useAuthStore = create((set) => ({
 			const userData = await response.json();
 			if (response.ok) {
 				set({ isLoggedIn: true });
+				set({ user: userData });
 				return userData;
 			}
 		} catch (error) {

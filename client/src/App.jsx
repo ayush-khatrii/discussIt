@@ -20,6 +20,9 @@ import { Toaster } from 'react-hot-toast';
 import { SocketProvider, useSocket } from './socket';
 import { io } from 'socket.io-client';
 import config from './constants/config';
+import { SidebarView } from './components/SidebarView';
+import Layout from './layout/layout';
+import LandingPage from './components/LandingPage';
 
 const App = () => {
 	const { isLoggedIn, getUser } = useAuthStore();
@@ -43,19 +46,21 @@ const App = () => {
 						</div>
 					}>
 						<Routes>
-							<Route path="/" element={isLoggedIn ? <ChatPage /> : <HomePage />} />
-							<Route path="/chats" element={isLoggedIn ? <ChatPage /> : <SignInPage />} />
-							<Route path="/groups" element={isLoggedIn ? <GroupsPage /> : <SignInPage />} />
-							<Route path="/chats/:chatId" element={isLoggedIn ? <SingleChatPage /> : <SignInPage />} />
-							<Route path="/groups/:groupId" element={isLoggedIn ? <SingleGroupPage /> : <SignInPage />} />
-							<Route path="/groups/:groupId/info" element={isLoggedIn ? <SingleGroupInfo /> : <SignInPage />} />
-							<Route path="/friends" element={isLoggedIn ? <Friends /> : <SignInPage />} />
-							<Route path="/profile" element={isLoggedIn ? <Profile /> : <SignInPage />} />
-							<Route path="/friend/:id" element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />} />
+							<Route element={<Layout />}>
+								<Route path="/home" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
+								<Route path="/chats" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
+								<Route path="/groups" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
+								<Route path="/chats/:chatId" element={isLoggedIn ? <SingleChatPage /> : <SignInPage />} />
+								<Route path="/groups/:groupId" element={isLoggedIn ? <SingleGroupPage /> : <SignInPage />} />
+								<Route path="/groups/:groupId/info" element={isLoggedIn ? <SingleGroupInfo /> : <SignInPage />} />
+								<Route path="/friends" element={isLoggedIn ? <Friends /> : <SignInPage />} />
+								<Route path="/profile" element={isLoggedIn ? <Profile /> : <SignInPage />} />
+								<Route path="/friend/:id" element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />} />
+							</Route>
+							<Route path="/" element={<HomePage />} />
+							<Route path="*" element={<ErrorPage />} />
 							<Route path="/signup" element={<SignUpPage />} />
 							<Route path="/login" element={<SignInPage />} />
-							{/* error route */}
-							<Route path="*" element={<ErrorPage />} />
 						</Routes>
 					</Suspense>
 				</div>
