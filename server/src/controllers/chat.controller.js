@@ -353,7 +353,7 @@ const getMessages = async (req, res, next) => {
 	try {
 		const { chatId } = req.params;
 		const { page } = req.query;
-		const resultPerPage = 20;
+		const resultPerPage = 10;
 		const skip = (page - 1) * resultPerPage;
 
 		const chat = await Chat.findById(chatId);
@@ -366,6 +366,7 @@ const getMessages = async (req, res, next) => {
 		const [messages, totalMessages] = await Promise.all([
 			Message.find({ chat: chatId })
 				.populate("sender", "username")
+				.sort({ createdAt: -1 })
 				.limit(resultPerPage)
 				.skip(skip)
 				.lean(),
