@@ -3,20 +3,22 @@ import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, TextField } from '
 import toast from 'react-hot-toast';
 import { format } from "date-fns";
 import { Link, useParams } from 'react-router-dom';
+// import Sidebar from '../Sidebar';
+import { SidebarView } from '../SidebarView';
 import { useSocket } from '../../socket';
 import useChatStore from '../../store/chatstore';
 import useAuthStore from '../../store/authstore';
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { IoMdAttach, IoMdCopy } from "react-icons/io";
+import { MdDeleteOutline } from "react-icons/md";
 import { SlDocs } from "react-icons/sl";
+import { CiClock2 } from "react-icons/ci";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 import { RiSendPlaneFill } from "react-icons/ri";
-import { useInView } from "react-intersection-observer";
 
 // import Message from '../Message';
 const SingleChatPage = () => {
 	const socket = useSocket();
-
-	console.log('socket', socket);
 	const { chatId } = useParams();
 
 	const { getChatDetails, getChatMessages, deleteMessage } = useChatStore();
@@ -26,15 +28,14 @@ const SingleChatPage = () => {
 	const [members, setMembers] = useState([]);
 	const [message, setMessage] = useState("");
 	const [messages, setMessages] = useState([]);
-	// const [oldMessages, setOldMessages] = useState([]);
+	const [oldMessages, setOldMessages] = useState([]);
 	const [chatData, setChatData] = useState([]);
 	const [page, setPage] = useState(1);
 
-	const { ref, inView } = useInView();
+
 	const {
 		data,
 		error,
-		isError,
 		fetchNextPage,
 		hasNextPage,
 		isFetching,
@@ -43,27 +44,24 @@ const SingleChatPage = () => {
 	} = useInfiniteQuery({
 		queryKey: ['messages'],
 		queryFn: ({ pageParam = 1 }) => getChatMessages(chatId, pageParam),
-		// getNextPageParam(lastPage, allPages) {
-		// 	return allPages.length + 1;
-		// },
-		getNextPageParam: (lastPage, allPages) => allPages.length + 1,
-		initialPageParam: 1,
+		initialPageParam: 0,
+		getNextPageParam: (lastPage) => lastPage.nextPage
 	});
 
-	console.log('data', data);
+	console.log("data from useInfiniteQuery", data);
 
-	// const allMessagesData = data?.pages.map((page) => page.messages);
-	const oldMessages = data?.pages.flatMap(page => page.messages) || [];
-	const totalPages = data?.pages.flatMap(page => page.totalPages);
-	console.log('query data', data);
 
-	if (isError) return <div>{error?.message}</div>;
 	const scrollRef = useRef(null);
+	const fetchMsg = async () => {
+		const msg = await getChatMessages(chatId, page);
+		console.log(msg);
+		setOldMessages(msg);
+	}
 	useEffect(() => {
-		if (inView)
-			fetchNextPage();
-		else return;
-	}, [inView, hasNextPage, fetchNextPage]);
+		fetchMsg();
+	}, []);
+
+	console.log("oldMessages", oldMessages)
 
 	useEffect(() => {
 		const getchatdetails = async () => {
@@ -79,15 +77,15 @@ const SingleChatPage = () => {
 		getchatdetails();
 	}, [chatId, getChatDetails, getUser, socket]);
 
-	// useEffect(() => {
-	// 	// Scroll to the bottom of the chat area when chatData changes
-	// 	if (scrollRef.current) {
-	// 		scrollRef.current.scrollTo({
-	// 			top: scrollRef.current.scrollHeight,
-	// 			behavior: 'smooth'
-	// 		});
-	// 	}
-	// }, [messages]);
+	useEffect(() => {
+		// Scroll to the bottom of the chat area when chatData changes
+		if (scrollRef.current) {
+			scrollRef.current.scrollTo({
+				top: scrollRef.current.scrollHeight,
+				behavior: 'smooth'
+			});
+		}
+	}, [messages]);
 
 	const handleChange = (e) => {
 		setMessage(e.target.value);
@@ -112,12 +110,9 @@ const SingleChatPage = () => {
 	}
 	// Call-Back fucntion(useCallBack) for listining to realtime events
 	const getMessage = useCallback((data) => {
-		setMessages((prevMessages) => [data.receivedMessage, ...prevMessages]);
+		setMessages((prevMessages) => [...prevMessages, data.receivedMessage]);
 	}, []);
-	// send user typing status with sockets 
-	const handleTyping = (data) => {
-		socket.emit("typing", data);
-	}
+
 	useEffect(() => {
 		socket.on("new-message", getMessage);
 
@@ -127,8 +122,7 @@ const SingleChatPage = () => {
 	}, []);
 
 
-	const allMessages = [...messages, ...oldMessages];
-	// const allMessages = [...oldMessages, ...messages];
+	// const allMessages = [...oldMessages?.messages, ...messages];
 
 	return (
 		<>
@@ -144,34 +138,96 @@ const SingleChatPage = () => {
 						</Link>
 						<Flex direction="column" className="flex-1">
 							<h1 className="text-zinc-300 capitalize font-bold">{chatData?.name}</h1>
-							<p className='text-sm font-medium  text-zinc-600'>last seen: 1 hour ago</p>
+							<p className="text-gray-400 text-sm">Last online: 1 hour ago</p>
 						</Flex>
 					</Flex>
 				</Box>
 				<ScrollArea ref={scrollRef} type="always" style={{ height: "80vh" }} scrollbars="vertical" className="" >
-					<div className="flex flex-col gap-2 px-5 z-50 py-5">
-						{allMessages.length === 0 ? <p className="opacity-50 text-center   text-sm">No messages yet! <b className='text-zinc'>Start Discussion </b> </p> : null}
-						{allMessages.map((item, index) => (
-							<div key={index} className={`flex items-center gap-1 ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
-								<div className='flex flex-col items-end'>
-									<div className={`px-3 py-2 w-auto flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950 border border-zinc-800"}`}>
-										<div className=''>
-											<div>
-												<p className='w-full text-zinc-300'>{item.content}</p>
-												<p className={`text-xs py-1 pr-2 opacity-25 ${item?.sender?._id === user?._id ? "text-right" : "text-left"}`}>{format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}</p>
+					<div className="flex flex-col gap-2 px-5 py-5">
+						{oldMessages?.messages?.map((item, index) => (
+							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
+								{/* <div className='text-zinc-600'>
+									{format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}
+								</div> */}
+								{
+									item?.sender?._id === user?._id &&
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											<a href="#">
+												<HiOutlineDotsVertical />
+											</a>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item>
+												<CiClock2 size={20} />  {format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}</DropdownMenu.Item>
+											<DropdownMenu.Item onClick={() => handleCopy(item.content)}>
+												<IoMdCopy size={20} /> Copy
+											</DropdownMenu.Item>
+											<div className={`${item?.sender?._id !== user?._id ? "hidden" : ""}`}>
+												<DropdownMenu.Item onClick={() => handleDeleteMessage(item._id)} color="red">
+													<MdDeleteOutline size={20} />
+													Delete message
+												</DropdownMenu.Item>
 											</div>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								}
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950 border border-zinc-800"}`}>
+									<div className=''>
+										<div>
+											<p className='w-full text-zinc-300'>
+												{item.content}
+											</p>
+											<p className='text-xs opacity-25 w-full'>
+												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy')}
+											</p>
 										</div>
 									</div>
-									<div>
+								</div>
+							</div>
+
+						))}
+						{messages?.map((item, index) => (
+							<div key={index} className={`flex items-center gap-1  ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
+								{
+									item?.sender?._id === user?._id &&
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											<Button variant="ghost" radius=''>
+												<HiOutlineDotsVertical />
+											</Button>
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item>
+												<CiClock2 size={20} />  {format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}</DropdownMenu.Item>
+											<DropdownMenu.Item onClick={() => handleCopy(item.content)}>
+												<IoMdCopy size={20} /> Copy
+											</DropdownMenu.Item>
+											<div className={`${item?.sender?._id !== user?._id ? "hidden" : ""}`}>
+												<DropdownMenu.Item onClick={() => handleDeleteMessage(item._id)} color="red">
+													<MdDeleteOutline size={20} />
+													Delete message
+												</DropdownMenu.Item>
+											</div>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								}
+								<div className={`p-2 flex flex-col rounded-lg cursor-pointer ${item?.sender?._id === user?._id ? "border border-zinc-900 bg-zinc-900" : "bg-zinc-950 border border-zinc-800"}`}>
+									<div className='mt-1 flex items-center justify-between gap-2'>
+										<div>
+											<p className='w-full'>
+												{item.content}
+											</p>
+											<p className='text-xs opacity-25 w-full'>
+												{format(item.createdAt, 'hh:mm a , dd-MMM-yyyy  ')}
+											</p>
+										</div>
 									</div>
 								</div>
-								{index === allMessages.length - 1 && <div ref={ref}></div>}
 							</div>
 						))}
-
 					</div>
 				</ScrollArea>
-
 
 				<form onSubmit={handleSubmit}>
 					<Flex justify="center" items="center" className="p-3 pb-5">
