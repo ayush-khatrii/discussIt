@@ -10,8 +10,10 @@ const Layout = () => {
 
   return (
     <div className="flex h-screen overflow-x-hidden">
-      <SidebarMenu />
-      <div className="relative">
+      <div className=''>
+        <SidebarMenu />
+      </div>
+      <div className="">
         <SidebarView />
       </div>
       <div onClick={() => toggleSidebar(!open)} className='absolute flex p-2 rounded-full border-2  border-zinc-800 cursor-pointer z-50 right-8 top-5'>
