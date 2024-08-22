@@ -54,7 +54,6 @@ const SingleChatPage = () => {
 
 	// const allMessagesData = data?.pages.map((page) => page.messages);
 	const oldMessages = data?.pages.flatMap(page => page.messages) || [];
-	const totalPages = data?.pages.flatMap(page => page.totalPages);
 	console.log('query data', data);
 
 	if (isError) return <div>{error?.message}</div>;
