@@ -25,7 +25,7 @@ const SidebarMenu = () => {
 
   return (
     <>
-      <aside class="flex flex-col  items-center w-16 h-screen py-8 overflow-y-auto bg-white dark:bg-black">
+      <aside class={`flex flex-col relative z-50 items-center h-screen py-8 overflow-y-auto bg-white dark:bg-black  ${open ? "lg:w-[60px] w-[80px] " : "w-[0px]"}`}>
         <nav class="flex flex-col items-center flex-1 space-y-6">
           <a href="#" className="font-black border bg-zinc-100 text-zinc-800 px-2 py-1 rounded-full">
             Di
@@ -51,7 +51,7 @@ const SidebarMenu = () => {
               <LuLogOut size={20} />
             </div>
           </Tooltip>
-       
+
           <Link to={`/profile`}>
 
             <Avatar
