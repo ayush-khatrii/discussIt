@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import { useSocket } from '../../socket';
 import { io } from 'socket.io-client';
 import useChatStore from '../../store/chatstore';
-import { SidebarView } from '../SidebarView';
 
 const GroupsPage = () => {
   const [groupChats, setGroupChats] = useState([])

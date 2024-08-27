@@ -215,7 +215,7 @@ const SingleChatPage = () => {
 
 				<form onSubmit={handleSubmit}>
 					<Flex justify="center" items="center" className="p-3 pb-5">
-						<TextField.Root size="3" radius='medium' name='content' value={message} onChange={handleChange} placeholder='Type a message...' className="flex-grow rounded-lg  mx-2" >
+						<TextField.Root required size="3" radius='medium' name='content' value={message} onChange={handleChange} placeholder='Type a message...' className="flex-grow rounded-lg  mx-2" >
 							<TextField.Slot>
 								<DropdownMenu.Root>
 									<DropdownMenu.Trigger>

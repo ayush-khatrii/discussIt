@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import { MdDeleteOutline } from "react-icons/md";
 import { format } from "date-fns";
 import { Link, useParams } from 'react-router-dom';
-import Sidebar from '../Sidebar';
 
 const SingleGroupPage = () => {
   const { groupId } = useParams();
@@ -78,9 +77,6 @@ const SingleGroupPage = () => {
 
   return (
     <>
-      <div className='relative top-3'>
-        <Sidebar />
-      </div>
       <main className={`flex flex-col justify-between h-screen`}>
         <Box as="div" className='bg-zinc-900 border-b border-zinc-700'>
           <Flex align="center" gap="3" className="p-2">
