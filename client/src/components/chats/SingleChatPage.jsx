@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, TextField } from '@radix-ui/themes';
+import { Avatar, Box, Button, DropdownMenu, Flex, ScrollArea, Spinner, TextField } from '@radix-ui/themes';
 import toast from 'react-hot-toast';
 import { format } from "date-fns";
 import { Link, useParams } from 'react-router-dom';
@@ -11,11 +11,15 @@ import { IoMdAttach, IoMdCopy } from "react-icons/io";
 import { SlDocs } from "react-icons/sl";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { useInView } from "react-intersection-observer";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import { IoCopyOutline } from "react-icons/io5";
+import { BiTrash } from "react-icons/bi";
+
 
 // import Message from '../Message';
 const SingleChatPage = () => {
 	const socket = useSocket();
-	
+
 	const { chatId } = useParams();
 
 	const { getChatDetails, getChatMessages, deleteMessage } = useChatStore();
@@ -36,9 +40,10 @@ const SingleChatPage = () => {
 		isError,
 		fetchNextPage,
 		hasNextPage,
-		isFetching,
 		isFetchingNextPage,
-		status
+		refetch,
+		status,
+		lastPage
 	} = useInfiniteQuery({
 		queryKey: ['messages'],
 		queryFn: ({ pageParam = 1 }) => getChatMessages(chatId, pageParam),
@@ -51,9 +56,7 @@ const SingleChatPage = () => {
 
 	console.log('data', data);
 
-	// const allMessagesData = data?.pages.map((page) => page.messages);
 	const oldMessages = data?.pages.flatMap(page => page.messages) || [];
-	const totalPages = data?.pages.flatMap(page => page.totalPages);
 	console.log('query data', data);
 
 	if (isError) return <div>{error?.message}</div>;
@@ -78,15 +81,7 @@ const SingleChatPage = () => {
 		getchatdetails();
 	}, [chatId, getChatDetails, getUser, socket]);
 
-	// useEffect(() => {
-	// 	// Scroll to the bottom of the chat area when chatData changes
-	// 	if (scrollRef.current) {
-	// 		scrollRef.current.scrollTo({
-	// 			top: scrollRef.current.scrollHeight,
-	// 			behavior: 'smooth'
-	// 		});
-	// 	}
-	// }, [messages]);
+
 
 	const handleChange = (e) => {
 		setMessage(e.target.value);
@@ -106,17 +101,14 @@ const SingleChatPage = () => {
 		const deletedMessage = await deleteMessage(messageId);
 		if (deletedMessage) {
 			toast.success("Message deleted!");
-			fetchMsg()
+			refetch();
 		}
 	}
 	// Call-Back fucntion(useCallBack) for listining to realtime events
 	const getMessage = useCallback((data) => {
 		setMessages((prevMessages) => [data.receivedMessage, ...prevMessages]);
 	}, []);
-	// send user typing status with sockets 
-	const handleTyping = (data) => {
-		socket.emit("typing", data);
-	}
+	
 	useEffect(() => {
 		socket.on("new-message", getMessage);
 
@@ -147,9 +139,8 @@ const SingleChatPage = () => {
 						</Flex>
 					</Flex>
 				</Box>
-				<ScrollArea ref={scrollRef} type="always" style={{ height: "80vh" }} scrollbars="vertical" className="" >
+				{/* <ScrollArea ref={scrollRef} type="always" style={{ height: "80vh" }} scrollbars="vertical" className="" >
 					<div className="flex flex-col gap-2 px-5 z-50 py-5">
-						{allMessages.length === 0 ? <p className="opacity-50 text-center   text-sm">No messages yet! <b className='text-zinc'>Start Discussion </b> </p> : null}
 						{allMessages.map((item, index) => (
 							<div key={index} className={`flex items-center gap-1 ${item?.sender?._id === user?._id ? "justify-end" : "justify-start"}`}>
 								<div className='flex flex-col items-end'>
@@ -167,10 +158,60 @@ const SingleChatPage = () => {
 								{index === allMessages.length - 1 && <div ref={ref}></div>}
 							</div>
 						))}
-
 					</div>
-				</ScrollArea>
+					{hasNextPage && <div className='text-center text-zinc-600'>You reached the end of the Discussions!</div>}
+				</ScrollArea> */}
+				<ScrollArea type="always" style={{ height: "80vh" }} scrollbars="vertical">
+					<div className="flex flex-col gap-2 px-5 py-5">
+						{allMessages.length === 0 ? (
+							<p className="opacity-50 text-center text-sm">
+								No messages yet! <b className='text-zinc'>Start Discussion</b>
+							</p>
+						) : null}
 
+						{allMessages.map((item, index) => {
+							const isSender = item?.sender?._id === user?._id;
+							return (
+								<div key={index} className={`flex items-center gap-1 ${isSender ? "justify-end" : "justify-start"}`}>
+									<div className='flex flex-col items-end'>
+										<div className={`relative group px-3 py-2 w-auto flex flex-col rounded-lg cursor-pointer transition-all duration-300 ${isSender ? "border border-zinc-800 bg-zinc-800" : "bg-zinc-950 border border-zinc-800"}`}>
+											<div className='flex justify-between items-center'>
+												<p className='text-zinc-300'>
+													{item.content}
+												</p>
+												{isSender && (
+													<div className='relative'>
+														<button className="text-zinc-400 opacity-75 hover:opacity-100 group-hover:block hidden">
+															<HiOutlineDotsVertical size={20} /></button>
+														<div className="absolute right-0 mt-2 w-40 bg-zinc-900 border border-zinc-700 rounded shadow-lg hidden group-hover:block z-50">
+															<button
+																className="flex items-center px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 w-full"
+																onClick={() => handleCopy(item.content)}
+															>
+																<IoCopyOutline className="mr-2" /> Copy
+															</button>
+															<button
+																className="flex items-center px-4 py-2 text-sm text-red-500 hover:bg-zinc-800 w-full"
+																onClick={() => handleDeleteMessage(item._id)}
+															>
+																<BiTrash className="mr-2" /> Delete
+															</button>
+														</div>
+													</div>
+												)}
+											</div>
+											<p className={`text-xs py-1 pr-2 opacity-50 ${isSender ? "text-right" : "text-left"}`}>
+												{format(item.createdAt, 'hh:mm a, dd-MMM-yyyy')}
+											</p>
+										</div>
+									</div>
+									{index === allMessages.length - 1 && <div ref={ref}></div>}
+								</div>
+							);
+						})}
+					</div>
+					{!hasNextPage && <div className='text-center text-zinc-600'>You reached the end of the Discussions!</div>}
+				</ScrollArea>
 
 				<form onSubmit={handleSubmit}>
 					<Flex justify="center" items="center" className="p-3 pb-5">

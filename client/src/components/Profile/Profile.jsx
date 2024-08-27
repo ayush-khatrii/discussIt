@@ -48,7 +48,7 @@ const Profile = () => {
 						<p className='opacity-50'>
 							Bio
 						</p>
-						<p className='text-xl w-full'>{user?.bio || "Hello my name is ayush and i love coding qkej5tjeoityeh jrghuimuerhgkueh  💘💘💘💘💘💘💘💘"}</p>
+						<p className='text-xl w-full'>{user?.bio}</p>
 					</div>
 					<div className='flex justify-center items-center px-5 space-x-3'>
 						<Dialog.Root>

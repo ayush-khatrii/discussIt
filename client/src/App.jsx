@@ -1,8 +1,7 @@
-import React, { Suspense, lazy, useContext, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 const HomePage = lazy(() => import('./components/Home/HomePage'));
-const ChatPage = lazy(() => import('./components/chats/ChatPage'));
 const SignInPage = lazy(() => import('./components/signin/SignInPage'));
 const SignUpPage = lazy(() => import('./components/signup/SignUpPage'));
 const SingleChatPage = lazy(() => import('./components/chats/SingleChatPage'));
@@ -10,7 +9,6 @@ const Profile = lazy(() => import('./components/Profile/Profile'));
 const Friends = lazy(() => import('./components/friends/Friends'));
 const FriendProfilePage = lazy(() => import('./components/friends/FriendProfilePage'));
 const ErrorPage = lazy(() => import('./components/ErrorPage'));
-const GroupsPage = lazy(() => import('./components/groups/GroupsPage'));
 const SingleGroupPage = lazy(() => import('./components/groups/SingleGroupPage'));
 const SingleGroupInfo = lazy(() => import('./components/groups/SingleGroupInfo'));
 
@@ -18,9 +16,6 @@ import Loader from "./components/Loader";
 import useAuthStore from './store/authstore';
 import { Toaster } from 'react-hot-toast';
 import { SocketProvider, useSocket } from './socket';
-import { io } from 'socket.io-client';
-import config from './constants/config';
-import { SidebarView } from './components/SidebarView';
 import Layout from './layout/layout';
 import LandingPage from './components/LandingPage';
 

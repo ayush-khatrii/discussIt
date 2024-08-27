@@ -11,7 +11,8 @@ const SignUpPage = () => {
 		fullName: '',
 		username: '',
 		password: '',
-		gender: ''
+		gender: '',
+		bio: ''
 	});
 
 	const navigate = useNavigate();
@@ -34,7 +35,7 @@ const SignUpPage = () => {
 		e.preventDefault();
 		try {
 			await validationSchema.validate(formData, { abortEarly: false });
-			await signup(formData.fullName, formData.password, formData.username, formData.gender);
+			await signup(formData.fullName, formData.password, formData.username, formData.gender, formData.bio);
 			toast.success('Account Created successfully!');
 			navigate("/home");
 
@@ -124,7 +125,13 @@ const SignUpPage = () => {
 								</TextField.Root>
 								<Text as="label">Bio</Text>
 								{/* for bio */}
-								<TextArea size="4" placeholder="Write your Bio" />
+								<TextField.Root
+									value={formData.bio}
+									onChange={handleChange}
+									name="bio"
+									size="3"
+									placeholder="Enter bio"
+								></TextField.Root>
 								<Text as="label">Gender</Text>
 								{showError?.gender && <p className="text-red-500 text-sm">{showError.gender}</p>}
 								<Flex align="start" direction="column" gap="3">

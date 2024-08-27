@@ -11,6 +11,7 @@ const FriendProfilePage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       const userData = await fetchUserProfile(id);
+      console.log(userData);
       setFriendProfile(userData);
     }
     fetchUser();
@@ -41,7 +42,7 @@ const FriendProfilePage = () => {
               Bio
             </p>
             <p className='text-xl w-full'>
-              {fetchUserProfile.bio}
+              {friendProfile.bio}
             </p>
           </div>
           <Flex align="center" justify="center" p="5">

@@ -8,16 +8,19 @@ const useAuthStore = create((set) => ({
 	isAdmin: false,
 	isLoading: true,
 	isLoggedIn: false,
-	signup: async (fullName, password, username, gender) => {
+	signup: async (fullName, password, username, gender, bio) => {
 		try {
 			set({ isLoading: true });
+			
+			
+			
 			const response = await fetch(`${SERVER_URL}/api/auth/register`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				credentials: 'include',
-				body: JSON.stringify({ fullName, username, password, gender })
+				body: JSON.stringify({ fullName, username, password, gender, bio })
 			});
 
 			const resut = await response.json();
@@ -95,6 +98,7 @@ const useAuthStore = create((set) => ({
 			if (response.ok) {
 				set({ isLoggedIn: true });
 				set({ user: userData });
+				console.log(userData);
 				return userData;
 			}
 		} catch (error) {

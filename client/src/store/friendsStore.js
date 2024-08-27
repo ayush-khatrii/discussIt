@@ -63,7 +63,6 @@ const useFriendsStore = create((set) => ({
         credentials: "include",
       });
       const result = await response.json();
-      console.log('all fr::::::::::::::::::::::', result);
       if (response.ok) {
         set({ allFriendRequests: result.friendRequests });
         return result;
@@ -87,7 +86,6 @@ const useFriendsStore = create((set) => ({
         credentials: "include",
       });
       const result = await response.json();
-      console.log(result)
       if (response.ok) {
         return result.userWithRequestStatus;
       } else {
