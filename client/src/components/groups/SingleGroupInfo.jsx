@@ -1,6 +1,5 @@
 import { Avatar, Badge, Box, Container, Flex } from '@radix-ui/themes'
 import React from 'react'
-import Sidebar from '../Sidebar'
 import { SlCalender } from 'react-icons/sl'
 import { Link } from 'react-router-dom'
 
