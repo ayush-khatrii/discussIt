@@ -10,7 +10,8 @@ import { getOtherMember } from "../utils/helper.js";
 const getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user)
-            .select("-password -avatar.public_id")
+            .select("-password -avatar.public_id");
+        console.log(user)
         if (!user) {
             return next(errorHandler(404, 'User not found!'));
         }
@@ -145,9 +146,9 @@ const sendFriendRequest = async (req, res, next) => {
             sender,
             receiver: userId,
         });
+        let requestStatus = existingRequest?.status;
 
         if (existingRequest) {
-            let requestStatus = existingRequest?.status;
             if (existingRequest.status === "pending") {
                 return res.status(400).json({ success: false, requestStatus, message: "Request already sent!" });
             } else if (existingRequest.status === "accepted") {
