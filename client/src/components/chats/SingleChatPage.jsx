@@ -60,12 +60,11 @@ const SingleChatPage = () => {
 	console.log('query data', data);
 
 	if (isError) return <div>{error?.message}</div>;
-	const scrollRef = useRef(null);
 	useEffect(() => {
 		if (inView)
 			fetchNextPage();
 		else return;
-	}, [inView, hasNextPage, fetchNextPage]);
+	}, [inView, hasNextPage, fetchNextPage, chatId]);
 
 	useEffect(() => {
 		const getchatdetails = async () => {
@@ -79,6 +78,7 @@ const SingleChatPage = () => {
 			}
 		}
 		getchatdetails();
+		refetch();
 	}, [chatId, getChatDetails, getUser, socket]);
 
 
@@ -108,7 +108,7 @@ const SingleChatPage = () => {
 	const getMessage = useCallback((data) => {
 		setMessages((prevMessages) => [data.receivedMessage, ...prevMessages]);
 	}, []);
-	
+
 	useEffect(() => {
 		socket.on("new-message", getMessage);
 
