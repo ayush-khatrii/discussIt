@@ -10,7 +10,7 @@ export const generateToken = (userId, res) => {
     httpOnly: true,
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    secure: true,
+    secure: process.env.NODE_ENV === "production"
   });
 };
 export const verifyToken = (user, token) => {
