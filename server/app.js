@@ -30,7 +30,7 @@ const getSockets = (users) => {
 const io = new Server(server, {
   cors: {
     methods: ["GET", "POST", "PUT", "DELETE"],
-    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
+    origin: ["https://discussitt.vercel.app", "http://localhost:5173"],
     credentials: true
   },
   cookie: true
@@ -41,10 +41,11 @@ const io = new Server(server, {
 app.set("io", io);
 app.use(express.json());
 app.use(cors({
-  origin: [process.env.CLIENT_URL, "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: ["https://discussitt.vercel.app", "http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
+  optionsSuccessStatus: 204
 }));
 app.use(cookieParser());
 
