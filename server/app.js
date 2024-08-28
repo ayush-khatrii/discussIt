@@ -30,6 +30,7 @@ const getSockets = (users) => {
 }
 const io = new Server(server, {
   cors: corsOptions,
+  cookie: true
 });
 
 
