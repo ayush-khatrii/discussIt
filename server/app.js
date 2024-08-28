@@ -30,7 +30,7 @@ const getSockets = (users) => {
 const io = new Server(server, {
   cors: {
     methods: ["GET", "POST", "PUT", "DELETE"],
-    origin: "http://localhost:5173",
+    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
     credentials: true
   },
   cookie: true
