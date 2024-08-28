@@ -16,6 +16,7 @@ import userRouter from "./src/routes/user.route.js";
 import adminRouter from "./src/routes/admin.route.js";
 // Connection
 import connectDB from "./src/db/connectDB.js";
+import { corsOptions } from "./src/constants/index.js";
 const port = process.env.PORT || 5000;
 
 
@@ -28,23 +29,26 @@ const getSockets = (users) => {
   return sockets;
 }
 const io = new Server(server, {
-  cors: {
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    origin: ["https://discussitt.vercel.app", "http://localhost:5173"],
-    credentials: true
-  },
-  cookie: true
+  cors: corsOptions,
 });
 
 
 // MiddleWares
 app.set("io", io);
 app.use(express.json());
-app.use(cors({
-  origin: ["https://discussitt.vercel.app", "http://localhost:5173"],
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(cookieParser());
+
+// routes
+app.use("/api/auth", authRouter);
+app.use("/api/chats", chatRouter);
+app.use("/api/user", userRouter);
+app.use("/admin", adminRouter);
+
+// root route
+app.get("/", (req, res) => {
+  res.send("Hello  World!");
+});
 
 const usersocketIDs = new Map();
 // socket-io auth middleware
@@ -105,17 +109,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Http requests
-
-app.get("/", (req, res) => {
-  res.send("Hello  World!");
-});
-
-// routes
-app.use("/api/auth", authRouter);
-app.use("/api/chats", chatRouter);
-app.use("/api/user", userRouter);
-app.use("/admin", adminRouter);
 
 
 // checking middlewares
