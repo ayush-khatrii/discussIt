@@ -42,10 +42,7 @@ app.set("io", io);
 app.use(express.json());
 app.use(cors({
   origin: ["https://discussitt.vercel.app", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  optionsSuccessStatus: 204
+  credentials: true
 }));
 app.use(cookieParser());
 
