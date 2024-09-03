@@ -4,14 +4,15 @@ import errorHandler from "../utils/errorHandler.js";
 import { uploadFile, removeExistingFile } from "../utils/cloudinary.js";
 import { getOtherMember } from "../utils/helper.js";
 import Message from "../models/message.model.js";
+import { getSockets } from "../../app.js";
+import { MESSAGE_DELETED } from "../constants/events.js";
 
 
 // Create group chat
 const createGroupChat = async (req, res, next) => {
 	try {
 		const { name, members } = req.body;
-		const groupAdmin = req.user._id;
-
+		const groupAdmin = req.user;
 		if (!name || !members) {
 			return next(errorHandler(400, "Please provide required fields"));
 		}
@@ -391,12 +392,44 @@ const deleteMessage = async (req, res, next) => {
 		if (!deletedMessage) {
 			return next(errorHandler(404, "Message not found!"));
 		}
+		const chatId = deletedMessage?.chat.toString();
+		const chat = await Chat.findById(chatId);
+		const allUserSocketUsers = getSockets(chat?.members);
+		const io = req.app.get("io");
 
+		io.to(allUserSocketUsers).emit(MESSAGE_DELETED, {
+			chat: chatId,
+			messageId: messageId,
+		});
 		res.status(200).json({ success: true, message: "Message deleted successfully" });
 	} catch (error) {
 		next(error);
 	}
 
+}
+
+// clear chat 
+const clearChatMessages = async (req, res, next) => {
+	try {
+		const { chatId } = req.params;
+		if (!chatId) {
+			return next(errorHandler(404, "Please provide Chat ID!"));
+		}
+		const foundChat = await Chat.findById(chatId).populate("members");
+		// const allMembers = foundChat?.members;
+		// console.log(allMembers);
+		// const myId = allMembers.filter(item => item.toString() === req.user.toString());
+		// console.log(myId.toString());
+
+		if (!foundChat) {
+			return next(errorHandler(404, "Chat not found!"));
+		}
+
+		await Message.deleteMany({ chat: chatId });
+
+	} catch (error) {
+		next(error);
+	}
 }
 export default {
 	createGroupChat,
@@ -409,5 +442,6 @@ export default {
 	leaveGroup,
 	createOneToOneChat,
 	getMessages,
-	deleteMessage
+	deleteMessage,
+	clearChatMessages
 };

@@ -18,5 +18,6 @@ router.put("/remove-members/:chatId", verifyToken, uploadAvatar, chatController.
 
 router.delete("/delete/:chatId", verifyToken, chatController.deleteGroupChat);
 router.delete("/leave-group/:chatId", verifyToken, uploadAvatar, chatController.leaveGroup);
+router.delete("/:chatId/messages", verifyToken, chatController.clearChatMessages);
 
 export default router;

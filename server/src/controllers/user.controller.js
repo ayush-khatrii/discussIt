@@ -11,7 +11,6 @@ const getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user)
             .select("-password -avatar.public_id");
-        console.log(user)
         if (!user) {
             return next(errorHandler(404, 'User not found!'));
         }
@@ -236,7 +235,6 @@ const getAllFriendRequests = async (req, res, next) => {
                 receiver: req.user
             }
         ).populate("sender", "fullName username avatar");
-        console.log('recieved', allRequests);
         const pendingRequests = allRequests.filter(request => request.status === "pending");
 
         if (!pendingRequests || pendingRequests.length === 0) {
@@ -310,7 +308,6 @@ const searchUser = async (req, res, next) => {
                         { sender: user._id, receiver: req.user }
                     ]
                 });
-                console.log(request)
                 return {
                     _id: user._id,
                     username: user.username,

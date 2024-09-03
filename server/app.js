@@ -17,6 +17,7 @@ import adminRouter from "./src/routes/admin.route.js";
 // Connection
 import connectDB from "./src/db/connectDB.js";
 import { corsOptions } from "./src/constants/index.js";
+import { NEW_MESSAGE } from "./src/constants/events.js";
 const port = process.env.PORT || 5000;
 
 
@@ -52,6 +53,8 @@ app.get("/", (req, res) => {
 });
 
 const usersocketIDs = new Map();
+let onlineUsers = [];
+
 // socket-io auth middleware
 io.use((socket, next) => {
   cookieParser()(
@@ -66,12 +69,34 @@ io.on("connection", (socket) => {
   const user = socket.user;
   usersocketIDs.set(user._id.toString(), socket.id);
 
+  // Handle new user connections
+  socket.on("new-user-add", (newUserId) => {
+    if (!onlineUsers.some((user) => user.userId === newUserId)) {
+      onlineUsers.push({ userId: newUserId, socketId: socket.id });
+      console.log("New user connected!", onlineUsers);
+    }
+    // Send all active users to the new user
+    io.emit("get-users", onlineUsers);
+  });
+
+  // Handle user disconnections
+  socket.on("offline", () => {
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+    console.log("User is offline", onlineUsers);
+    io.emit("get-users", onlineUsers);
+  });
+
+  // Mark user as offline on disconnect
+  socket.on("disconnect", (reason) => {
+    usersocketIDs.delete(user._id.toString());
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+    console.log(`User disconnected: ${socket.id}, reason: ${reason}`);
+    io.emit("get-users", onlineUsers);
+  });
+
   socket.broadcast.emit("welcome", `Welcome ${socket.id} to the chat`);
-
-
-
   // send  message realtime message from server to client
-  socket.on("new-message", async ({ chat, members, content }) => {
+  socket.on(NEW_MESSAGE, async ({ chat, members, content }) => {
     const receivedMessage = {
       content,
       _id: uuidv4(),
@@ -82,7 +107,6 @@ io.on("connection", (socket) => {
       chat,
       createdAt: new Date().toISOString()
     }
-    console.log("Message received: ", receivedMessage);
 
     const message = {
       content,
@@ -91,7 +115,7 @@ io.on("connection", (socket) => {
     }
 
     const allUserSockets = getSockets(members);
-    io.to(allUserSockets).emit("new-message", {
+    io.to(allUserSockets).emit(NEW_MESSAGE, {
       receivedMessage
     });
     io.to(allUserSockets).emit("new-message-received", { chat });
@@ -103,11 +127,6 @@ io.on("connection", (socket) => {
     }
 
   })
-
-  socket.on("disconnect", () => {
-    usersocketIDs.delete(user._id.toString());
-    console.log("Disconnected from socket.io" + socket.id);
-  });
 });
 
 
@@ -130,4 +149,4 @@ connectDB().then(() => {
   });
 });
 
-export { usersocketIDs }
+export { usersocketIDs, getSockets }
