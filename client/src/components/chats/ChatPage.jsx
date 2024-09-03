@@ -16,7 +16,7 @@ const ChatsPage = () => {
 		};
 
 		fetchChats();
-	}, [getMyChats]);
+	}, [getMyChats,]);
 
 
 	if (chats?.length === 0) {

@@ -75,6 +75,22 @@ const useChatStore = create((set) => ({
     } catch (error) {
       console.log(error);
     }
+  },
+  clearChatMessages: async (chatId) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/api/chats/${chatId}/messages`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error('Failed to clear chat');
+      return await response.json();
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+      throw error;
+    }
   }
 }));
 

@@ -98,7 +98,6 @@ const useAuthStore = create((set) => ({
 			if (response.ok) {
 				set({ isLoggedIn: true });
 				set({ user: userData });
-				console.log(userData);
 				return userData;
 			}
 		} catch (error) {

@@ -3,9 +3,11 @@ import useFriendsStore from '../store/friendsStore';
 import { Avatar, Button, Dialog, Flex, ScrollArea, TextField, Tooltip } from '@radix-ui/themes';
 import { FaBell } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import useChatStore from '../store/chatstore';
 
 const FriendRequests = () => {
   const { getAllFriendRequests, allFriendRequests, accepFriendRequest } = useFriendsStore();
+  const { getMyChats } = useChatStore();
   useEffect(() => {
     getAllFriendRequests();
   }, []);
@@ -14,6 +16,7 @@ const FriendRequests = () => {
     accepFriendRequest(id, value);
     toast.success("Friend Request Accepted!");
     getAllFriendRequests();
+    getMyChats();
   }
   const handleRejectFriendRequest = (id, value) => {
     try {
