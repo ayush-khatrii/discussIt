@@ -47,60 +47,66 @@ const getUserProfile = async (req, res, next) => {
 // Update user profile
 const updateProfile = async (req, res, next) => {
     try {
-
         const { username, fullName, bio } = req.body;
         const { userId } = req.params;
 
+        // Check if userId is provided
         if (!userId) {
             return next(errorHandler(404, 'User not provided!'));
         }
-        const user = await User.findById(userId).select("-password");
 
+        // Find the user by ID
+        const user = await User.findById(userId).select("-password");
         if (!user) {
             return next(errorHandler(404, 'User not found!'));
         }
 
-        const updatedAvatar = {};
+        // Create an object for storing the fields to be updated
+        const updates = {};
 
+        // Update fields only if they are provided in the request body
+        if (username) updates.username = username;
+        if (fullName) updates.fullName = fullName;
+        if (bio) updates.bio = bio;
 
-        const existingAvatar = {
-            public_id: user.avatar.public_id,
-            avatar_url: user.avatar.avatar_url
-        }
-        if (user.avatar?.public_id) {
-            const [removedUserAvatar, uploadedUserAvatar] = await Promise.all([
-                removeExistingFile(existingAvatar.public_id),
-                uploadFile(req.file.path, "user-avatar", "image")
-            ]);
+        // Handle avatar update only if a new file is provided
+        if (req.file) {
+            const existingAvatar = {
+                public_id: user.avatar?.public_id,
+                avatar_url: user.avatar?.avatar_url
+            };
 
-            updatedAvatar.avatar = {
-                public_id: uploadedUserAvatar.public_id,
-                avatar_url: uploadedUserAvatar.url
+            if (existingAvatar.public_id) {
+                const [removedUserAvatar, uploadedUserAvatar] = await Promise.all([
+                    removeExistingFile(existingAvatar.public_id),
+                    uploadFile(req.file.path, "user-avatar", "image")
+                ]);
+
+                updates.avatar = {
+                    public_id: uploadedUserAvatar.public_id,
+                    avatar_url: uploadedUserAvatar.url
+                };
+            } else {
+                const uploadedAvatar = await uploadFile(req.file.path, "user-avatar", "image");
+                updates.avatar = {
+                    public_id: uploadedAvatar.public_id,
+                    avatar_url: uploadedAvatar.url
+                };
             }
-        } else {
-            const uplodedAvatar = await uploadFile(req.file.path, "user-avatar", "image");
-            updatedAvatar.avatar = {
-                public_id: uplodedAvatar.public_id,
-                avatar_url: uplodedAvatar.url
-            }
         }
-        const newUpdatedUser = await User.findByIdAndUpdate(
-            userId, {
-            username,
-            fullName,
-            username,
-            bio,
-            avatar: updatedAvatar.avatar
-        }, { new: true }
-        )
 
-        await newUpdatedUser.save();
-        res.status(200).json({ message: "Profile updated successfully!", newUpdatedUser });
+        // Update the user with the provided fields
+        const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
 
+        console.log(updatedUser);
+        await updatedUser.save();
+
+        res.status(200).json({ message: "Profile updated successfully!", updatedUser });
     } catch (error) {
         next(error);
     }
-}
+};
+
 // Delete  user profile
 const deleteProfile = async (req, res, next) => {
     try {
