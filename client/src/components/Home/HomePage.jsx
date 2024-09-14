@@ -140,8 +140,9 @@ const HomeFooter = () => (
   <footer className="bg-black text-zinc-300 py-8">
     <div className="text-center">
       <div className="text-center">
-        <p className="text-xl font-medium text-zinc-500">Developed by <span className='bg-clip-text text-xl font-bold text-transparent bg-gradient-to-r from-pink-900 to-purple-600'>
-          Ayush Khatri  </span>
+        <p className="text-xl font-medium text-zinc-500">Developed by
+          <span className='bg-clip-text text-xl font-bold text-transparent bg-gradient-to-r from-pink-900 to-purple-600'>
+            Ayush Khatri  </span>
         </p>
       </div>
     </div>

@@ -24,7 +24,24 @@ const useUserStore = create((set) => ({
     } catch (error) {
       throw error;
     }
-  }
+  },
+  updateUserProfile: async (userId, data) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/api/user/update/${userId}`, {
+        method: "PUT",
+        credentials: "include",
+        body: data,
+      });
+      const result = await response.json();
+      if (response.ok) {
+        return result;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
 }));
 
 export default useUserStore;
