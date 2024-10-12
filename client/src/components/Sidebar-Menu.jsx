@@ -30,11 +30,11 @@ const SidebarMenu = () => {
           <a href="#" className="font-black border bg-zinc-100 text-zinc-800 px-2 py-1 rounded-full">
             Di
           </a>
-          <Tooltip content="All Chats">
-            <Link to="/home" className="p-1.5 text-gray-700 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-200 dark:hover:bg-gray-800 hover:bg-gray-100">
+          {/* <Tooltip content="All Chats">
+            <Link to="/chats" className="p-1.5 text-gray-700 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-200 dark:hover:bg-gray-800 hover:bg-gray-100">
               <PiChatsFill size="20" />
             </Link>
-          </Tooltip>
+          </Tooltip> */}
 
           <a href="#" className="p-1.5 text-gray-700 focus:outline-nones transition-colors duration-200 rounded-lg dark:text-gray-200 dark:hover:bg-gray-800 hover:bg-gray-100">
             <FriendRequests />

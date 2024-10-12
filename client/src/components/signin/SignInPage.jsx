@@ -38,7 +38,7 @@ const SignInPage = () => {
 			await login(formData.username, formData.password);
 			toast.success('Login successful');
 			console.log(user);
-			navigate('/home');
+			navigate('/chats');
 			setFormData("");
 
 		} catch (error) {

@@ -1,7 +1,6 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-const HomePage = lazy(() => import('./components/Home/HomePage'));
 const SignInPage = lazy(() => import('./components/signin/SignInPage'));
 const SignUpPage = lazy(() => import('./components/signup/SignUpPage'));
 const SingleChatPage = lazy(() => import('./components/chats/SingleChatPage'));
@@ -42,7 +41,6 @@ const App = () => {
 					}>
 						<Routes>
 							<Route element={<Layout />}>
-								<Route path="/home" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
 								<Route path="/chats" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
 								<Route path="/groups" element={isLoggedIn ? <LandingPage /> : <SignInPage />} />
 								<Route path="/chats/:chatId" element={isLoggedIn ? <SingleChatPage /> : <SignInPage />} />
@@ -52,10 +50,12 @@ const App = () => {
 								<Route path="/profile" element={isLoggedIn ? <Profile /> : <SignInPage />} />
 								<Route path="/friend/:id" element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />} />
 							</Route>
-							<Route path="/" element={<HomePage />} />
-							<Route path="*" element={<ErrorPage />} />
-							<Route path="/signup" element={<SignUpPage />} />
-							<Route path="/login" element={<SignInPage />} />
+							<Route element={<Layout />}>
+								<Route path="/" element={<LandingPage />} />
+								<Route path="*" element={<ErrorPage />} />
+								<Route path="/signup" element={<SignUpPage />} />
+								<Route path="/login" element={<SignInPage />} />
+							</Route>
 						</Routes>
 					</Suspense>
 				</div>
