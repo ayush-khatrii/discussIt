@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import config from '../constants/config';
-import { Navigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 const { SERVER_URL } = config;
 const useAuthStore = create((set) => ({
 	user: null,
@@ -11,9 +9,9 @@ const useAuthStore = create((set) => ({
 	signup: async (fullName, password, username, gender, bio) => {
 		try {
 			set({ isLoading: true });
-			
-			
-			
+
+
+
 			const response = await fetch(`${SERVER_URL}/api/auth/register`, {
 				method: 'POST',
 				headers: {
@@ -73,7 +71,6 @@ const useAuthStore = create((set) => ({
 			if (response.ok) {
 				set({ user: null });
 				set({ isLoggedIn: false });
-				toast.success('Logout successful!');
 			}
 
 			else {

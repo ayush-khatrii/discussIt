@@ -4,8 +4,6 @@ import { removeExistingFile, uploadFile } from "../utils/cloudinary.js";
 import bcrypt from "bcryptjs";
 import errorHandler from "../utils/errorHandler.js";
 import Chat from "../models/chat.model.js";
-import fs from "fs";
-import path from "path";
 
 // Get current user profile
 const getProfile = async (req, res, next) => {
@@ -48,11 +46,6 @@ const getUserProfile = async (req, res, next) => {
 // Update user profile
 const updateProfile = async (req, res, next) => {
     try {
-        // Checking the directory exists before trying to save the file
-        const tempDir = path.join(__dirname, 'public/temp');
-        if (!fs.existsSync(tempDir)) {
-            fs.mkdirSync(tempDir, { recursive: true });// Create directory if it doesn't exist
-        }
 
         const { username, fullName, bio } = req.body;
         const { userId } = req.params;

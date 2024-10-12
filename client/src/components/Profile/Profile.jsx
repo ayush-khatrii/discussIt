@@ -23,7 +23,7 @@ const Profile = () => {
 
 	const fetchUser = async () => {
 		const userData = await getUser();
-		console.log(userData);
+		console.log('userData', userData);
 		setUser(userData);
 		setUpdatedProfile({
 			fullName: userData.fullName,
@@ -51,7 +51,7 @@ const Profile = () => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setAvatarLoading(true);  // Start avatar loading when submitting
+		setAvatarLoading(true);
 		const formData = new FormData();
 		formData.append('fullName', updatedProfile.fullName);
 		formData.append('username', updatedProfile.username);
@@ -62,12 +62,12 @@ const Profile = () => {
 
 		try {
 			setIsLoading(true);
-			await updateUserProfile(user._id, formData);
+			const resp = await updateUserProfile(user._id, formData);
 		} catch (error) {
 			console.log('Error updating profile:', error);
 		} finally {
 			setIsLoading(false);
-			setAvatarLoading(false);  // Stop avatar loading after update
+			setAvatarLoading(false);
 			fetchUser();
 		}
 	};
@@ -195,7 +195,7 @@ const Profile = () => {
 				</Container>
 
 				<Flex align="center" justify="center" p="5">
-					<SlCalender /><p className="px-3 opacity-50">joined 1-02-2000</p>
+					<SlCalender /><p className="px-3 opacity-50">{user?.createdAt ? user?.createdAt : "1-1-2000"}</p>
 				</Flex>
 			</div>
 		</>

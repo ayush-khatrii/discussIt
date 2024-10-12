@@ -6,19 +6,25 @@ import { Avatar, Tooltip } from "@radix-ui/themes";
 import { LuLogOut } from "react-icons/lu";
 import FriendRequests from "./FriendRequests";
 import AddFriendComponent from "./AddFriendComponent";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PiChatsFill } from "react-icons/pi";
-
+import useChatStore from "../store/chatstore";
+import toast from "react-hot-toast";
 const SidebarMenu = () => {
   const { getUser, user, logout } = useAuthStore();
   const { open } = useSideBarStore();
+  const { getMyChats } = useChatStore();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getUser();
   }, []);
   const handleLogout = () => {
     logout();
-    return <Navigate to="/login" />
+    getMyChats();
+    navigate("/login");
+    toast.success("Logout successful");
   }
 
 
@@ -53,7 +59,6 @@ const SidebarMenu = () => {
           </Tooltip>
 
           <Link to={`/profile`}>
-
             <Avatar
               radius='full'
               size="3"
