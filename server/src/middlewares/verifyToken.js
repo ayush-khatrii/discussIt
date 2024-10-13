@@ -7,7 +7,7 @@ export const verifyToken = async (req, res, next) => {
   try {
     const token = req.cookies.token;
     if (!token) {
-      return next(errorHandler(401, "Please login first!"))
+      return next(errorHandler(401, "You are not logged in!"))
     }
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {

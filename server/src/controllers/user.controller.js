@@ -21,7 +21,9 @@ const getProfile = async (req, res, next) => {
             fullName: user.fullName,
             username: user.username,
             bio: user.bio,
-            avatar: user.avatar.avatar_url
+            avatar: user.avatar.avatar_url,
+            createdAt: user?.createdAt,
+            updatedAt: user?.updatedAt
         }
 
         return res.status(200).json(userData);
