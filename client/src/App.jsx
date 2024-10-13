@@ -17,6 +17,7 @@ import { Toaster } from 'react-hot-toast';
 import { SocketProvider, useSocket } from './socket';
 import Layout from './layout/layout';
 import LandingPage from './components/LandingPage';
+import HomePage from './HomePage';
 
 const App = () => {
 	const { isLoggedIn, getUser } = useAuthStore();
@@ -51,7 +52,7 @@ const App = () => {
 								<Route path="/friend/:id" element={isLoggedIn ? <FriendProfilePage /> : <SignInPage />} />
 							</Route>
 							<Route element={<Layout />}>
-								<Route path="/" element={<LandingPage />} />
+								<Route path="/" element={<HomePage />} />
 								<Route path="*" element={<ErrorPage />} />
 								<Route path="/signup" element={<SignUpPage />} />
 								<Route path="/login" element={<SignInPage />} />

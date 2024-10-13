@@ -37,7 +37,7 @@ const SignUpPage = () => {
 			await validationSchema.validate(formData, { abortEarly: false });
 			await signup(formData.fullName, formData.password, formData.username, formData.gender, formData.bio);
 			toast.success('Account Created successfully!');
-			navigate("/home");
+			navigate("/chats");
 
 		} catch (error) {
 			if (error.name === 'ValidationError') {
