@@ -72,6 +72,8 @@ const Profile = () => {
 		}
 	};
 
+	const userCreatedAt = new Date(user?.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+
 	return (
 		<>
 			<div className="h-screen max-w-xl mx-auto py-8">
@@ -96,8 +98,10 @@ const Profile = () => {
 								<p className="text-2xl">Friends</p>
 							</div>
 						</div>
-						<p className="opacity-50">Bio</p>
-						<p className="text-xl w-full">{user?.bio ? user?.bio : "No bio...."}</p>
+						<div className='my-5'>
+							<p className="opacity-50">Bio</p>
+							<p className="text-xl w-full">{user?.bio && user?.bio}</p>
+						</div>
 					</div>
 
 					{/* Edit profile modal */}
@@ -195,7 +199,7 @@ const Profile = () => {
 				</Container>
 
 				<Flex align="center" justify="center" p="5">
-					<SlCalender /><p className="px-3 opacity-50">{user?.createdAt ? user?.createdAt : "1-1-2000"}</p>
+					<SlCalender /><p className="px-3 opacity-50">{userCreatedAt}</p>
 				</Flex>
 			</div>
 		</>

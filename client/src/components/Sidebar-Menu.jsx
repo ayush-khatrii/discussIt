@@ -12,8 +12,6 @@ import useChatStore from "../store/chatstore";
 import toast from "react-hot-toast";
 const SidebarMenu = () => {
   const { getUser, user, logout } = useAuthStore();
-  const { open } = useSideBarStore();
-  const { getMyChats } = useChatStore();
 
   const navigate = useNavigate();
 
@@ -22,7 +20,6 @@ const SidebarMenu = () => {
   }, []);
   const handleLogout = () => {
     logout();
-    getMyChats();
     navigate("/login");
     toast.success("Logout successful");
   }

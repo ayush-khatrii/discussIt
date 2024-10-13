@@ -12,7 +12,6 @@ const SignInPage = () => {
 
 	const navigate = useNavigate();
 	const login = useAuthStore((state) => state.login);
-	const user = useAuthStore((state) => state.user);
 	const isLoading = useAuthStore((state) => state.isLoading);
 
 	const [formData, setFormData] = useState({
@@ -35,11 +34,15 @@ const SignInPage = () => {
 		e.preventDefault();
 		try {
 			await validationSchema.validate(formData, { abortEarly: false });
-			await login(formData.username, formData.password);
-			toast.success('Login successful');
-			console.log(user);
-			navigate('/chats');
-			setFormData("");
+			const resp = await login(formData.username, formData.password);
+			if (resp) {
+				setFormData({
+					username: '',
+					password: ''
+				});
+				toast.success('Login successful');
+				return navigate('/chats', { replace: true });
+			}
 
 		} catch (error) {
 			if (error.name === 'ValidationError') {

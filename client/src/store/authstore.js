@@ -4,14 +4,11 @@ const { SERVER_URL } = config;
 const useAuthStore = create((set) => ({
 	user: null,
 	isAdmin: false,
-	isLoading: true,
+	isLoading: false,
 	isLoggedIn: false,
 	signup: async (fullName, password, username, gender, bio) => {
 		try {
 			set({ isLoading: true });
-
-
-
 			const response = await fetch(`${SERVER_URL}/api/auth/register`, {
 				method: 'POST',
 				headers: {
@@ -34,8 +31,33 @@ const useAuthStore = create((set) => ({
 			set({ isLoading: false })
 		}
 	},
+	// login: async (username, password) => {
+	// 	try {
+	// 		const response = await fetch(`${SERVER_URL}/api/auth/login`, {
+	// 			method: 'POST',
+	// 			headers: {
+	// 				'Content-Type': 'application/json'
+	// 			},
+	// 			credentials: 'include',
+	// 			body: JSON.stringify({ username, password })
+	// 		});
+
+	// 		const userData = await response.json();
+	// 		if (!response.ok) {
+	// 			throw new Error(userData.message)
+	// 		}
+	// 		return userData;
+
+	// 	} catch (error) {
+	// 		throw error
+	// 	} finally {
+	// 		set({ isLoading: false })
+	// 	}
+	// },
+
 	login: async (username, password) => {
 		try {
+			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/auth/login`, {
 				method: 'POST',
 				headers: {
@@ -49,7 +71,8 @@ const useAuthStore = create((set) => ({
 			if (!response.ok) {
 				throw new Error(userData.message)
 			}
-
+			set({ user: userData, isLoggedIn: true }); // Update user state and isLoggedIn
+			return userData;
 		} catch (error) {
 			throw error
 		} finally {
@@ -58,7 +81,7 @@ const useAuthStore = create((set) => ({
 	},
 	logout: async () => {
 		try {
-
+			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/auth/logout`, {
 				method: 'POST',
 				headers: {
@@ -72,18 +95,15 @@ const useAuthStore = create((set) => ({
 				set({ user: null });
 				set({ isLoggedIn: false });
 			}
-
-			else {
-				throw new Error('Error logging out', result.message);
-			}
 		} catch (error) {
-			throw error
+			console.log('Error logging out:', error);
 		} finally {
 			set({ isLoading: false })
 		}
 	},
 	getUser: async () => {
 		try {
+			set({ isLoading: true });
 			const response = await fetch(`${SERVER_URL}/api/user/profile`, {
 				method: "GET",
 				headers: {

@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from 'react';
 import { Button, Text } from '@radix-ui/themes';
 import useAuthStore from './store/authstore';
@@ -21,7 +19,6 @@ const HomePage = () => {
     try {
       const userData = await getUser();
       if (!userData) {
-        toast.error("Please log in first");
         navigate("/login");
       } else {
         navigate("/chats");
