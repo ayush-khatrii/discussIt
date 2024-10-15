@@ -40,7 +40,6 @@ const SingleChatPage = () => {
 	const [chatData, setChatData] = useState([]);
 	const [onlineUsers, setOnlineUsers] = useState([]);
 	const [showEmoji, setShowEmoji] = useState(false);
-
 	const { ref, inView } = useInView();
 	const scrollAreaRef = useRef(null);
 
@@ -159,11 +158,42 @@ const SingleChatPage = () => {
 		};
 	}, [socket, handleGetNewMessage]);
 
+
+
 	const handleEmojiClick = (emojiObject) => {
 		setMessage((prev) => prev + emojiObject.emoji);
 	};
 
+	useEffect(() => {
+		if (socket) {
+			console.log("Socket connected:", socket.id);
+
+			// Emit to update users when connected
+			socket.emit("update_users");
+
+			const handleOnlineUsersStatus = (updatedOnlineUsers) => {
+				console.log("Received update_users event:", updatedOnlineUsers);
+				setOnlineUsers(updatedOnlineUsers);
+			};
+
+			socket.on("update_users", handleOnlineUsersStatus);
+
+			// Request initial online status immediately after connection
+			socket.emit("get_initial_status");
+
+			return () => {
+				socket.off("update_users", handleOnlineUsersStatus);
+			};
+		}
+	}, [socket]);
+
+
+	console.log("Online users:", onlineUsers);
 	const allMessages = oldMessages;
+
+	const isUserOnline = onlineUsers.some(user =>
+		user.id === chatData?.otherMemberId && user.status === 'online'
+	);
 
 	return (
 		<main className={`h-screen flex flex-col justify-between`}>
@@ -178,7 +208,11 @@ const SingleChatPage = () => {
 				</Link>
 				<Flex direction="column" className="flex-1">
 					<h1 className="text-zinc-300 capitalize font-bold">{chatData?.name}</h1>
-					<p className='text-sm font-medium text-zinc-600'>last seen: 1 hour ago</p>
+					<p className='text-sm font-medium text-zinc-600'>
+						{
+							isUserOnline ? <p className='text-green-500 font-light'>online</p> : <p className='text-zinc-500'>offline</p>
+						}
+					</p>
 				</Flex>
 				<div className='mx-12 mt-2'>
 					<DropdownMenu.Root>

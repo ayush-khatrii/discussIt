@@ -53,7 +53,8 @@ app.get("/", (req, res) => {
 });
 
 const usersocketIDs = new Map();
-let onlineUsers = [];
+const onlineUsers = new Map();
+
 
 // socket-io auth middleware
 io.use((socket, next) => {
@@ -68,30 +69,23 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   const user = socket.user;
   usersocketIDs.set(user._id.toString(), socket.id);
+  const userId = socket.user._id.toString();
 
-  // Handle new user connections
-  socket.on("new-user-add", (newUserId) => {
-    if (!onlineUsers.some((user) => user.userId === newUserId)) {
-      onlineUsers.push({ userId: newUserId, socketId: socket.id });
-      console.log("New user connected!", onlineUsers);
-    }
-    // Send all active users to the new user
-    io.emit("get-users", onlineUsers);
+  socket.broadcast.emit('update_users', Array.from(onlineUsers.values()));
+
+  onlineUsers.set(userId, { id: userId, status: 'online' });
+  io.emit('update_users', Array.from(onlineUsers.values()));
+  console.log(`User ${user.fullName} is now online`);
+
+
+  socket.on('get_initial_status', () => {
+    socket.emit('update_users', Array.from(onlineUsers.values()));
   });
 
-  // Handle user disconnections
-  socket.on("offline", () => {
-    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
-    console.log("User is offline", onlineUsers);
-    io.emit("get-users", onlineUsers);
-  });
-
-  // Mark user as offline on disconnect
-  socket.on("disconnect", (reason) => {
-    usersocketIDs.delete(user._id.toString());
-    onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
-    console.log(`User disconnected: ${socket.id}, reason: ${reason}`);
-    io.emit("get-users", onlineUsers);
+  socket.on('disconnect', () => {
+    onlineUsers.set(userId, { ...onlineUsers.get(userId), status: 'offline' });
+    io.emit('update_users', Array.from(onlineUsers.values()));
+    console.log(`User ${user.fullName} went offline`);
   });
 
   socket.broadcast.emit("welcome", `Welcome ${socket.id} to the chat`);
