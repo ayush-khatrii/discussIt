@@ -188,7 +188,9 @@ const SingleChatPage = () => {
 							</Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
-							<DropdownMenu.Item>View Profile</DropdownMenu.Item>
+							<Link to={`/friend/${chatData.otherMemberId}`}>
+								<DropdownMenu.Item>View Profile</DropdownMenu.Item>
+							</Link>
 							<DropdownMenu.Sub>
 								<DropdownMenu.SubTrigger>Call</DropdownMenu.SubTrigger>
 								<DropdownMenu.SubContent>

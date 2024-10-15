@@ -17,7 +17,7 @@ const useUserStore = create((set) => ({
       });
       const result = await response.json();
       if (response.ok) {
-        return result;
+        set({ userProfile: result });
       } else {
         throw new Error(result.message);
       }

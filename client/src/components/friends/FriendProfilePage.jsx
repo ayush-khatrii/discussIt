@@ -5,18 +5,17 @@ import { SlCalender } from "react-icons/sl";
 import useUserStore from "../../store/userstore";
 
 const FriendProfilePage = () => {
-  const [friendProfile, setFriendProfile] = useState([]);
-  const { fetchUserProfile } = useUserStore();
+  // const [friendProfile, setFriendProfile] = useState([]);
+  const { fetchUserProfile, userProfile: friendProfile } = useUserStore();
   const { id } = useParams();
   useEffect(() => {
     const fetchUser = async () => {
-      const userData = await fetchUserProfile(id);
-      console.log(userData);
-      setFriendProfile(userData);
+      await fetchUserProfile(id);
     }
     fetchUser();
   }, []);
 
+  const userCreatedAt = new Date(friendProfile?.createdAt).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
   return (
     <>
       <div className='absolute top-5 right-5'>
@@ -31,22 +30,22 @@ const FriendProfilePage = () => {
                     radius="full"
                     // size={{ base: "7", md: "5" }}
                     size="7"
-                    src={friendProfile.avatar?.avatar_url}
+                    src={friendProfile?.avatar?.avatar_url}
                   />
                 </div>
                 <h1 className='text-xl'>{friendProfile?.fullName}</h1>
-                <h1 className='text-base opacity-50'>{friendProfile.username}</h1>
+                <h1 className='text-base opacity-50'>{friendProfile?.username}</h1>
               </div>
             </div>
             <p className='text-zinc-700 font-medium text-xl'>
               Bio
             </p>
             <p className='text-xl w-full'>
-              {friendProfile.bio}
+              {friendProfile?.bio}
             </p>
           </div>
           <Flex align="center" justify="center" p="5">
-            <SlCalender /><p className='px-3 opacity-50'>joined 1-02-2000</p>
+            <SlCalender /><p className='px-3 opacity-50'>{userCreatedAt}</p>
           </Flex>
         </Container>
       </div>
