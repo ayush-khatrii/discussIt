@@ -4,11 +4,13 @@ import { MdSearch } from "react-icons/md";
 
 import { Link } from 'react-router-dom';
 import { useSocket } from '../../socket';
-import { io } from 'socket.io-client';
 import useChatStore from '../../store/chatstore';
-import { SidebarView } from '../SidebarView';
+import useUserStatus from '../../hooks/useUserStatus';
 
 const ChatsPage = () => {
+	const socket = useSocket();
+	const onlineUsers = useUserStatus(socket);
+
 	const { chats, getMyChats } = useChatStore();
 	useEffect(() => {
 		const fetchChats = async () => {
@@ -16,8 +18,7 @@ const ChatsPage = () => {
 		};
 
 		fetchChats();
-	}, [getMyChats,]);
-
+	}, [getMyChats]);
 
 	if (chats?.length === 0) {
 		return (
@@ -33,7 +34,7 @@ const ChatsPage = () => {
 					<>
 						<div key={index} className='cursor-pointer w-auto h-full flex flex-col'>
 							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 px-2 py-1  w-full transition ease-out  duration-200 rounded'>
-								<div className=' p-2'>
+								<div className=' py-2 border-b border-zinc-900'>
 									<Flex gap="3" justify="between" align="center">
 										<Flex gap="3" justify="center" align="center">
 											<div>
@@ -44,11 +45,16 @@ const ChatsPage = () => {
 													className='border'
 													src={chat?.avatar} />
 											</div>
-											<Flex justify="center" direction="column" align="center" gap="1">
-												<h1 className='text-xl sm:text-xl  text-zinc-300'>
+											<div className="flex w-full justify-between">
+												<h1 className='text-xl sm:text-xl text-zinc-300'>
 													{chat.name}
 												</h1>
-											</Flex>
+												<div className='absolute right-8'>
+													{
+														onlineUsers.some(user => user.id === chat?.otherMemberId && user.status === 'online') && <Badge color="green">Online</Badge>
+													}
+												</div>
+											</div>
 										</Flex>
 									</Flex>
 								</div>

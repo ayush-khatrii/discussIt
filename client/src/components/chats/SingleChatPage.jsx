@@ -40,11 +40,11 @@ const SingleChatPage = () => {
 	const [chatData, setChatData] = useState([]);
 	const [onlineUsers, setOnlineUsers] = useState([]);
 	const [showEmoji, setShowEmoji] = useState(false);
-
 	const { ref, inView } = useInView();
+	const scrollAreaRef = useRef(null);
 
 	const queryClient = useQueryClient();
-	const { data, error, isError, fetchNextPage, hasNextPage } = useInfiniteQuery({
+	const { data, error, isError, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery({
 		queryKey: ['messages', chatId],
 		queryFn: ({ pageParam = 1 }) => getChatMessages(chatId, pageParam),
 		getNextPageParam: (lastPage, allPages) => allPages.length + 1,
@@ -58,7 +58,7 @@ const SingleChatPage = () => {
 		},
 	});
 
-	const oldMessages = data?.pages.flatMap(page => page.messages) || [];
+	const oldMessages = data?.pages.flatMap(page => page.messages).reverse() || [];
 	if (isError) return <div>{error}</div>;
 
 	useEffect(() => {
@@ -134,32 +134,66 @@ const SingleChatPage = () => {
 	const handleGetNewMessage = useCallback(
 		(data) => {
 			queryClient.setQueryData(['messages', chatId], (oldData) => {
-				if (!oldData) return { pages: [{ messages: [data.receivedMessage] }] };
+				if (!oldData) return { pages: [{ messages: [data.receivedMessage] }], pageParams: [1] };
 				return {
 					...oldData,
-					pages: [
-						{ messages: [data.receivedMessage, ...oldData.pages[0].messages] },
-						...oldData.pages.slice(1),
-					],
+					pages: oldData.pages.map((page, index) =>
+						index === 0
+							? { ...page, messages: [data.receivedMessage, ...page.messages] }
+							: page
+					),
 				};
 			});
+			if (scrollAreaRef.current) {
+				scrollAreaRef.current.scrollTo(0, scrollAreaRef.current.scrollHeight);
+			}
 		},
 		[chatId, queryClient]
 	);
 
 	useEffect(() => {
-		// Listen for new messages and deletions
 		socket.on(NEW_MESSAGE, handleGetNewMessage);
 		return () => {
 			socket.off(NEW_MESSAGE, handleGetNewMessage);
 		};
 	}, [socket, handleGetNewMessage]);
 
+
+
 	const handleEmojiClick = (emojiObject) => {
 		setMessage((prev) => prev + emojiObject.emoji);
 	};
 
+	useEffect(() => {
+		if (socket) {
+			console.log("Socket connected:", socket.id);
+
+			// Emit to update users when connected
+			socket.emit("update_users");
+
+			const handleOnlineUsersStatus = (updatedOnlineUsers) => {
+				console.log("Received update_users event:", updatedOnlineUsers);
+				setOnlineUsers(updatedOnlineUsers);
+			};
+
+			socket.on("update_users", handleOnlineUsersStatus);
+
+			// Request initial online status immediately after connection
+			socket.emit("get_initial_status");
+
+			return () => {
+				socket.off("update_users", handleOnlineUsersStatus);
+			};
+		}
+	}, [socket]);
+
+
+	console.log("Online users:", onlineUsers);
 	const allMessages = oldMessages;
+
+	const isUserOnline = onlineUsers.some(user =>
+		user.id === chatData?.otherMemberId && user.status === 'online'
+	);
 
 	return (
 		<main className={`h-screen flex flex-col justify-between`}>
@@ -174,7 +208,11 @@ const SingleChatPage = () => {
 				</Link>
 				<Flex direction="column" className="flex-1">
 					<h1 className="text-zinc-300 capitalize font-bold">{chatData?.name}</h1>
-					<p className='text-sm font-medium text-zinc-600'>last seen: 1 hour ago</p>
+					<p className='text-sm font-medium text-zinc-600'>
+						{
+							isUserOnline ? <p className='text-green-500 font-light'>online</p> : <p className='text-zinc-500'>offline</p>
+						}
+					</p>
 				</Flex>
 				<div className='mx-12 mt-2'>
 					<DropdownMenu.Root>
@@ -184,7 +222,9 @@ const SingleChatPage = () => {
 							</Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content>
-							<DropdownMenu.Item>View Profile</DropdownMenu.Item>
+							<Link to={`/friend/${chatData.otherMemberId}`}>
+								<DropdownMenu.Item>View Profile</DropdownMenu.Item>
+							</Link>
 							<DropdownMenu.Sub>
 								<DropdownMenu.SubTrigger>Call</DropdownMenu.SubTrigger>
 								<DropdownMenu.SubContent>
@@ -211,8 +251,15 @@ const SingleChatPage = () => {
 
 			{/* Messages Section */}
 			<div>
-				<ScrollArea type="always" style={{ height: 'calc(100vh - 150px)' }} scrollbars="vertical">
+				<ScrollArea
+					ref={scrollAreaRef}
+					type="always"
+					style={{ height: 'calc(100vh - 150px)' }}
+					scrollbars="vertical"
+				>
 					<div className="flex flex-col gap-2 px-5 py-5">
+						{isFetchingNextPage && <Spinner />}
+						<div ref={ref}></div>
 						{allMessages.length === 0 ? (
 							<p className="opacity-50 text-center text-sm">
 								No messages yet! <b className='text-zinc'>Start Discussion</b>
@@ -223,7 +270,7 @@ const SingleChatPage = () => {
 								return (
 									<div key={index} className={`flex items-center gap-1 ${isSender ? "justify-end" : "justify-start"}`}>
 										<div className='flex flex-col items-end'>
-											<div className={`relative group px-3 py-2 w-auto flex flex-col rounded-lg cursor-pointer transition-all duration-300 ${isSender ? "border border-zinc-800 bg-zinc-800" : "bg-zinc-950 border border-zinc-800"}`}>
+											<div className={`relative group px-3 py-2 w-auto flex flex-col rounded-lg cursor-pointer transition-all duration-300 ${isSender ? "border border-zinc-800 bg-indigo-800" : "bg-zinc-950 border border-zinc-800"}`}>
 												<div className='flex justify-between items-center'>
 													<p className='text-zinc-300'>
 														{item.content}
@@ -231,7 +278,8 @@ const SingleChatPage = () => {
 													{isSender && (
 														<div className='relative'>
 															<button className="text-zinc-400 opacity-75 hover:opacity-100 group-hover:block hidden">
-																<HiOutlineDotsVertical size={20} /></button>
+																<HiOutlineDotsVertical size={20} />
+															</button>
 															<div className="absolute right-0 mt-2 w-40 bg-zinc-900 border border-zinc-700 rounded shadow-lg hidden group-hover:block z-50">
 																<button
 																	className="flex items-center px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 w-full"
@@ -248,14 +296,14 @@ const SingleChatPage = () => {
 												</p>
 											</div>
 										</div>
-										{index === allMessages.length - 1 && <div ref={ref}></div>}
 									</div>
 								);
 							})
 						)}
 					</div>
-					{!hasNextPage && <div className='text-center text-zinc-600'>You reached the end of the Discussions!</div>}
+					{!hasNextPage && <div className='text-center text-zinc-600'>You've reached the beginning of the chat!</div>}
 				</ScrollArea>
+
 			</div>
 
 			{/* Input Section */}

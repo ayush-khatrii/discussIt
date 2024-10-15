@@ -146,7 +146,8 @@ const getMyChats = async (req, res, next) => {
 				avatar: chat.isGroupChat ? chat?.groupAvatar?.avatar_url : otherMember?.avatar?.avatar_url,
 				_id: chat._id,
 				members: chat.members.filter(item => item._id.toString() !== req.user._id.toString()),
-				isGroupChat: chat.isGroupChat
+				isGroupChat: chat.isGroupChat,
+				otherMemberId: otherMember?._id
 			}
 		});
 
