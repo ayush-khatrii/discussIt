@@ -33,8 +33,8 @@ const ChatsPage = () => {
 				{chats?.map((chat, index) => (
 					<>
 						<div key={index} className='cursor-pointer w-auto h-full flex flex-col'>
-							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 px-2 py-1  w-full transition ease-out  duration-200 rounded'>
-								<div className=' py-2 border-b border-zinc-900'>
+							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 py-1  w-full transition ease-out  duration-200 rounded'>
+								<div className='border-b py-2 border-zinc-900'>
 									<Flex gap="3" justify="between" align="center">
 										<Flex gap="3" justify="center" align="center">
 											<div>
@@ -46,7 +46,7 @@ const ChatsPage = () => {
 													src={chat?.avatar} />
 											</div>
 											<div className="flex w-full justify-between">
-												<h1 className='text-xl sm:text-xl text-zinc-300'>
+												<h1 className='text-lg md:text-base text-zinc-300'>
 													{chat.name}
 												</h1>
 												<div className='absolute right-8'>
@@ -59,9 +59,6 @@ const ChatsPage = () => {
 									</Flex>
 								</div>
 							</Link>
-							{/* <div className='opacity-20'>
-								<Separator size="4" className='' orientation="horizontal" />
-							</div> */}
 						</div>
 					</>
 				))}
