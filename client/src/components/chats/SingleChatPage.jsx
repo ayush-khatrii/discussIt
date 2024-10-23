@@ -318,10 +318,8 @@ const SingleChatPage = () => {
 					{showEmoji && (
 						<div className='absolute bottom-20 left-0 md:left-auto w-full md:w-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl p-2 z-50'>
 							<EmojiPicker
-								emojiStyle='facebook'
-								lazyLoadEmojis={true}
+								emojiStyle='apple'
 								onEmojiClick={handleEmojiClick}
-								searchDisabled={true}
 								theme='dark'
 								className='w-full'
 							/>

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import useFriendsStore from '../store/friendsStore';
 import { Avatar, Button, Dialog, Flex, ScrollArea, TextField, Tooltip } from '@radix-ui/themes';
-import { FaBell } from 'react-icons/fa';
+import {  FaUserFriends } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import useChatStore from '../store/chatstore';
 
@@ -35,7 +35,7 @@ const FriendRequests = () => {
           <Tooltip content="Friend Requests">
             <Dialog.Trigger>
               <div className='cursor-pointer'>
-                <FaBell size="18" />
+                <FaUserFriends size="18" />
               </div>
             </Dialog.Trigger>
           </Tooltip>
