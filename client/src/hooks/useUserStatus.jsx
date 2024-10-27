@@ -6,13 +6,11 @@ const useUserStatus = (socket) => {
 
   useEffect(() => {
     if (socket) {
-      console.log("Socket connected:", socket.id);
 
       // Emit to update users when connected
       socket.emit("update_users");
 
       const handleOnlineUsersStatus = (updatedOnlineUsers) => {
-        console.log("Received update_users event:", updatedOnlineUsers);
         setOnlineUsers(updatedOnlineUsers);
       };
 

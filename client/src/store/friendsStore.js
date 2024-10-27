@@ -9,6 +9,7 @@ const useFriendsStore = create((set) => ({
   friends: [],
   allFriendRequests: [],
   sentRequests: [],
+  setFriendsRequests: (friends) => set({ allFriendRequests: friends }),
   sendFriendRequest: async (userId) => {
     try {
       const response = await fetch(`${SERVER_URL}/api/user/send-request`, {
@@ -32,7 +33,7 @@ const useFriendsStore = create((set) => ({
       toast.error('Failed to send friend request. Please try again later.');
     }
   },
-  accepFriendRequest: async (requestId, accept) => {
+  acceptOrRejectFriendRequest: async (requestId, accept) => {
     try {
       const response = await fetch(`${SERVER_URL}/api/user/accept-request`, {
         method: "PUT",
@@ -43,11 +44,14 @@ const useFriendsStore = create((set) => ({
         body: JSON.stringify({ requestId, accept }),
       });
       const result = await response.json();
+      const message = result.message;
       if (response.ok) {
-
-        return result.message;
-      } else {
-        throw new Error(result.message);
+        set((state) => ({
+          allFriendRequests: state.allFriendRequests.filter(
+            (request) => request._id !== requestId
+          )
+        }));
+        return message;
       }
     } catch (error) {
       throw error;
@@ -65,6 +69,7 @@ const useFriendsStore = create((set) => ({
       const result = await response.json();
       if (response.ok) {
         set({ allFriendRequests: result.friendRequests });
+        console.log(result);
         return result;
       } else {
         toast.error(result.message);

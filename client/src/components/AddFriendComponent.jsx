@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useFriendsStore from "../store/friendsStore";
 import { Avatar, Badge, Button, Dialog, Flex, ScrollArea, TextField, Tooltip } from "@radix-ui/themes";
 import { IoCheckmark, IoSearchOutline } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { useSocket } from "../socket";
 
 const AddFriendComponent = () => {
 	const [searchQuery, setSearchQuery] = useState('');
 	const { searchUser, sendFriendRequest } = useFriendsStore();
 	const [searchedUsers, setSearchedUsers] = useState([]);
-
 	// Send Friend Request
 	const handleSendFriendRequest = async (userId) => {
 		await sendFriendRequest(userId);
-		// Update the request status for the specific user
 	};
 
 	// Search User

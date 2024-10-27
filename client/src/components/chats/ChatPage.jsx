@@ -1,6 +1,5 @@
-import { Avatar, Badge, Box, Button, Dialog, Flex, ScrollArea, Separator, TextField } from '@radix-ui/themes'
+import { Avatar, Badge, Flex } from '@radix-ui/themes'
 import React, { useEffect, useMemo, useState } from 'react'
-import { MdSearch } from "react-icons/md";
 
 import { Link } from 'react-router-dom';
 import { useSocket } from '../../socket';
@@ -20,10 +19,10 @@ const ChatsPage = () => {
 		fetchChats();
 	}, [getMyChats]);
 
-	if (chats?.length === 0) {
+	if (!chats || chats?.length < 1) {
 		return (
 			<div className='flex flex-col justify-center items-center'>
-				<p className='p-5 flex  justify-center items-center text-center'>No Chats Found! Click on the  + icon to create a new chat </p>
+				<p className='p-5 flex text-white  justify-center items-center text-center'>No Chats Found! Click on the  + icon to create a new chat </p>
 			</div>
 		)
 	}
@@ -31,8 +30,8 @@ const ChatsPage = () => {
 		<>
 			<div className='flex flex-col px-5 my-3'>
 				{chats?.map((chat, index) => (
-					<>
-						<div key={index} className='cursor-pointer w-auto h-full flex flex-col'>
+					<div key={index}>
+						<div className='cursor-pointer w-auto h-full flex flex-col'>
 							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 py-1  w-full transition ease-out  duration-200 rounded'>
 								<div className='border-b py-2 border-zinc-900'>
 									<Flex gap="3" justify="between" align="center">
@@ -60,7 +59,7 @@ const ChatsPage = () => {
 								</div>
 							</Link>
 						</div>
-					</>
+					</div>
 				))}
 			</div>
 		</>

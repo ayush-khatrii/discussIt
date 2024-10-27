@@ -35,8 +35,8 @@ const SidebarMenu = () => {
           <div className="px-3 py-4 border-b border-zinc-800">
             <div className="flex items-center justify-between">
               <Link to="/" className="flex items-center">
-                <span className="self-center text-xl font-semibold whitespace-nowrap text-white">
-                  ChatApp
+                <span className="self-center text-xl font-semibold whitespace-nowrap bg-white border-2 absolute border-zinc-800 px-1.5 py-0.5 text-black rounded-full">
+                  Di
                 </span>
               </Link>
               <div className="flex items-center space-x-2">
@@ -53,11 +53,6 @@ const SidebarMenu = () => {
                 <Tooltip content="Friend Requests">
                   <button className="p-1 text-zinc-400 rounded-full hover:bg-zinc-800">
                     <FriendRequests />
-                  </button>
-                </Tooltip>
-                <Tooltip content="Notifications">
-                  <button className="p-1 text-zinc-400 rounded-full hover:bg-zinc-800">
-                    <IoNotificationsOutline size={20} />
                   </button>
                 </Tooltip>
               </div>
