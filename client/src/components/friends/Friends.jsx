@@ -62,10 +62,8 @@ const Friends = () => {
   // Search User
   const handleSearchUser = async () => {
     try {
-      console.log("searched user :: ", searchQuery);
       const result = await searchUser(searchQuery);
       setSearchedUsers(result);
-      console.log("Got these results ::::", result);
     } catch (error) {
       setError(error);
       toast.error(error.message);

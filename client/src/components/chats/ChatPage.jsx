@@ -28,12 +28,12 @@ const ChatsPage = () => {
 	}
 	return (
 		<>
-			<div className='flex flex-col px-5 my-3'>
+			<div className='flex flex-col'>
 				{chats?.map((chat, index) => (
 					<div key={index}>
-						<div className='cursor-pointer w-auto h-full flex flex-col'>
-							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 py-1  w-full transition ease-out  duration-200 rounded'>
-								<div className='border-b py-2 border-zinc-900'>
+						<div className='cursor-pointer w-full flex flex-col'>
+							<Link to={`/chats/${chat?._id}`} className='hover:bg-zinc-900 w-full transition ease-in-out duration-200 rounded'>
+								<div className='border-b p-2 border-zinc-900'>
 									<Flex gap="3" justify="between" align="center">
 										<Flex gap="3" justify="center" align="center">
 											<div>
