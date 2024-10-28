@@ -41,7 +41,6 @@ const SingleChatPage = () => {
 	const [onlineUsers, setOnlineUsers] = useState([]);
 	const [showEmoji, setShowEmoji] = useState(false);
 	const { ref, inView } = useInView();
-	const scrollAreaRef = useRef(null);
 
 	const queryClient = useQueryClient();
 	const { data, error, isError, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery({
@@ -144,9 +143,6 @@ const SingleChatPage = () => {
 					),
 				};
 			});
-			if (scrollAreaRef.current) {
-				scrollAreaRef.current.scrollTo(0, scrollAreaRef.current.scrollHeight);
-			}
 		},
 		[chatId, queryClient]
 	);
@@ -252,13 +248,16 @@ const SingleChatPage = () => {
 			{/* Messages Section */}
 			<div>
 				<ScrollArea
-					ref={scrollAreaRef}
 					type="always"
 					style={{ height: 'calc(100vh - 150px)' }}
 					scrollbars="vertical"
 				>
 					<div className="flex flex-col gap-2 px-5 py-5">
-						{isFetchingNextPage && <Spinner />}
+						{isFetchingNextPage &&
+							<div className='flex justify-center items-center text-center my-10'>
+								<Spinner />
+							</div>
+						}
 						<div ref={ref}></div>
 						{allMessages.length === 0 ? (
 							<p className="opacity-50 text-center text-sm">
