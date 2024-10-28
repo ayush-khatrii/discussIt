@@ -4,6 +4,8 @@ import { removeExistingFile, uploadFile } from "../utils/cloudinary.js";
 import bcrypt from "bcryptjs";
 import errorHandler from "../utils/errorHandler.js";
 import Chat from "../models/chat.model.js";
+import { emitEvent } from "../utils/helper.js";
+import { NEW_FRIEND_REQUEST } from "../constants/events.js";
 
 // Get current user profile
 const getProfile = async (req, res, next) => {
@@ -161,14 +163,33 @@ const sendFriendRequest = async (req, res, next) => {
             } else if (existingRequest.status === "accepted") {
                 return res.status(400).json({ success: false, requestStatus, message: "You both are already friends!" });
             }
-        } 5
+        }
         // Checking if a chat already exists between the sender and the receiver
-
         const newRequest = new Request({
             sender,
             receiver: userId
         });
         await newRequest.save();
+        const requests = await Request.findById(newRequest._id)
+            .populate("sender", "fullName username avatar");
+
+        const _newRequests = {
+            _id: requests._id,
+            sender: {
+                _id: requests?.sender._id,
+                fullName: requests?.sender?.fullName,
+                username: requests?.sender?.username,
+                avatar: requests?.sender?.avatar?.avatar_url,
+                status: requests?.status
+            }
+        }
+
+        // Emitting the event
+        emitEvent(req, NEW_FRIEND_REQUEST, userId, {
+            friendRequests: [_newRequests]
+        });
+
+
         res.status(200).json({ success: true, requestStatus, message: "Friend request sent!" });
     } catch (error) {
         next(error);
@@ -251,25 +272,6 @@ const getAllFriendRequests = async (req, res, next) => {
         if (allRequests.status === "pending") {
             return res.status(200).json({ message: "No pending friend requests found!" });
         }
-        // const senderIds = pendingRequests.map(request => request.sender._id);
-        // const exixstingChats = await Chat.find({
-        //     members: { $all: [req.user._id, { $in: senderIds }] }
-        // });
-        // filter the sender id
-
-        // const request = await Request.findById(requestId)
-        //     .populate("sender", "fullName username")
-        //     .populate("receiver", "fullName username");
-
-        // const members = [request.sender._id, request.receiver._id];
-        // // Checking if chat already exists
-        // const existingChat = await Chat.find({
-        //     members: { $all: members }
-        // });
-
-        // if (existingChat) {
-        //     return next(errorHandler(400, "You are already friends!"));
-        // }
 
         const friendRequests = pendingRequests.map(({ _id, sender }) => ({
             _id,
