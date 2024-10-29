@@ -102,7 +102,6 @@ const updateProfile = async (req, res, next) => {
         // Update the user with the provided fields
         const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
 
-        console.log(updatedUser);
         await updatedUser.save();
 
         res.status(200).json({ message: "Profile updated successfully!", updatedUser });
