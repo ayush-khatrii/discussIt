@@ -252,7 +252,6 @@ const leaveGroup = async (req, res, next) => {
 			return next(errorHandler(404, "You cannot leave from a non-group chat! "))
 		}
 
-		// founding the existing members from the group chat
 		const existingGroupMembers = foundChat.members.filter((member) => member.toString() !== req.user.toString());
 
 		if (foundChat.groupAdmin.toString() === req.user.toString()) {
