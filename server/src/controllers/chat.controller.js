@@ -239,7 +239,6 @@ const removeGroupMembers = async (req, res, next) => {
 };
 
 // Leave from the group
-
 const leaveGroup = async (req, res, next) => {
 	try {
 		const { chatId } = req.params;
