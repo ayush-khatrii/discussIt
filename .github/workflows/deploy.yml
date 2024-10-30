@@ -18,8 +18,19 @@ jobs:
           echo "$PRIVATE_KEY" > key.pem
           chmod 600 key.pem
 
-           ssh -o StrictHostKeyChecking=no -i key.pem $EC2_USER@$EC2_HOST "
-            cd /home/ubuntu/discussIt/server &&
+          ssh -i key.pem $EC2_USER@$EC2_HOST "
+
+          if ! command -v nvm &> /dev/null
+          then
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+          source ~/.bashrc
+          fi
+          export NVM_DIR=\"\$HOME/.nvm\"
+          [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"
+          nvm install 20
+          nvm use 20
+
+          cd /home/ubuntu/discussIt/server &&
             git pull origin main &&
             npm install &&
             sudo systemctl daemon-reload &&
