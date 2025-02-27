@@ -110,11 +110,45 @@ const SignInPage = () => {
 								<Button type='submit' size="2" disabled={isLoading}>
 									{isLoading ? "Loading..." : "Sign In"}
 								</Button>
+								<Button
+									onClick={
+										async () => {
+											try {
+												const resp = await login('demo.user.1', 'Demouser_1');
+												if (resp) {
+													toast.success('Login successful!');
+													return navigate('/chats', { replace: true });
+												}
+											} catch (error) {
+												toast.error(error.message);
+											}
+										}
+									}
+									color='white' highContrast type='submit' size="2" disabled={isLoading} >
+									Login with Demo id 1
+								</Button>
+								<Button
+									onClick={
+										async () => {
+											try {
+												const resp = await login('demo.user.2', 'Demouser_2');
+												if (resp) {
+													toast.success('Login successful!');
+													return navigate('/chats', { replace: true });
+												}
+											} catch (error) {
+												toast.error(error.message);
+											}
+										}
+									}
+									color='white' highContrast type='submit' size="2" disabled={isLoading} >
+									Login with Demo ID 2
+								</Button>
 							</Flex>
 						</form>
 					</div>
 				</Container>
-			</section>
+			</section >
 		</>
 	)
 }

@@ -11,6 +11,7 @@ import { FaUserFriends } from "react-icons/fa";
 import toast from "react-hot-toast";
 import FriendRequests from "./FriendRequests";
 import AddFriendComponent from "./AddFriendComponent";
+import CreateGroupChat from './CreateGroupChat';
 
 const SidebarMenu = () => {
   const { open, toggleSidebar } = useSideBarStore();
@@ -42,7 +43,7 @@ const SidebarMenu = () => {
               <div className="flex items-center space-x-2">
                 <Tooltip content="New Chat">
                   <button className="p-1 text-zinc-400 rounded-full hover:bg-zinc-800">
-                    <IoAddOutline size={20} />
+                    <CreateGroupChat />
                   </button>
                 </Tooltip>
                 <Tooltip content="Add Friends">
