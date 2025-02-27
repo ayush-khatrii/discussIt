@@ -125,7 +125,7 @@ const SignInPage = () => {
 										}
 									}
 									color='white' highContrast type='submit' size="2" disabled={isLoading} >
-									Login with Demo id 1
+									Login with Demo ID 1
 								</Button>
 								<Button
 									onClick={
